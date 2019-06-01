@@ -3,9 +3,6 @@ from classes.Value import Value
 
 
 class Card:
-    suit = None
-
-    value = None
 
     def __init__(self, suit, value):
 

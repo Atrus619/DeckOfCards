@@ -17,3 +17,5 @@ class Constants:
 
     JOKER = 15
 
+    STANDARD = "STANDARD"
+
