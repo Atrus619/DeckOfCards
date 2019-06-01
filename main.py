@@ -4,7 +4,7 @@ from classes.Card import Card
 from util.Constants import Constants
 
 
-card = Card(Constants.CLUBS, 10)
+card = Card(Constants.DIAMONDS, 8)
 
 print(card.suit)
 print(card.value)
