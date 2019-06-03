@@ -19,3 +19,8 @@ class Constants:
 
     STANDARD = "STANDARD"
 
+    DECKS = {
+        STANDARD: "init_std_deck",
+        "PINOCHLE": "init_pinochle_deck"
+    }
+
