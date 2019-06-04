@@ -1,26 +1,33 @@
 class Constants:
+    # Suits
     HEARTS = "HEARTS"
-
     CLUBS = "CLUBS"
-
     SPADES = "SPADES"
-
     DIAMONDS = "DIAMONDS"
 
-    JACK = 11
+    # Values
+    ONE = "ONE"
+    TWO = "TWO"
+    THREE = "THREE"
+    FOUR = "FOUR"
+    FIVE = "FIVE"
+    SIX = "SIX"
+    SEVEN = "SEVEN"
+    EIGHT = "EIGHT"
+    NINE = "NINE"
+    TEN = "TEN"
+    JACK = "JACK"
+    QUEEN = "QUEEN"
+    KING = "KING"
+    ACE = "ACE"
+    JOKER = "JOKER"
 
-    QUEEN = 12
-
-    KING = 13
-
-    ACE = 14
-
-    JOKER = 15
-
+    # Decks
     STANDARD = "STANDARD"
+    PINOCHLE = "PINOCHLE"
 
     DECKS = {
-        STANDARD: "init_std_deck",
-        "PINOCHLE": "init_pinochle_deck"
+        STANDARD,
+        PINOCHLE
     }
 

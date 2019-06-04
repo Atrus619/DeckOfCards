@@ -1,13 +1,12 @@
 from classes.Suits import Suits
 from classes.Value import Value
-from util.Constants import Constants
+from util.Constants import Constants as cs
 
 
 class Card:
+    def __init__(self, value, suit):
 
-    def __init__(self, suit, value):
-
-        if value == Constants.JOKER:
+        if value == cs.JOKER:
             assert suit is None
         else:
             assert suit in Suits.allowed

@@ -1,7 +1,9 @@
-import numpy as np
-from util.Constants import Constants
+from util.Constants import Constants as cs
 
 
 class Suits:
-    allowed = np.array((Constants.HEARTS, Constants.CLUBS, Constants.SPADES, Constants.DIAMONDS))
+    allowed = {cs.HEARTS,
+               cs.CLUBS,
+               cs.SPADES,
+               cs.DIAMONDS}
 

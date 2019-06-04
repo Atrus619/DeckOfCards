@@ -1,19 +1,22 @@
 from classes.Suits import Suits
 from classes.Value import Value
 from classes.Card import Card
-from util.Constants import Constants
-import numpy as np
+from util.Constants import Constants as cs
+import random
 
 
 class Deck:
-
-    def __init__(self, deck=Constants.STANDARD, num_jokers=0):
-
-        self.deck = deck
+    def __init__(self, deck=cs.STANDARD, num_jokers=0):
+        self.deck = deck.upper()
         self.cards = []
-        assert self.deck in Constants.DECKS, \
-            print("Invalid deck configuration requested. Valid configurations include",', '.join([x for x in Constants.DECKS]) + ".")
-        eval(Constants.DECKS[self.deck] + '(self)')  # TODO: THIS IS BAD AND SHOULD GET CLEANED UP
+        assert self.deck in cs.DECKS, \
+            "Invalid deck configuration requested. Valid configurations include " + ', '.join([x for x in cs.DECKS]) + "."
+        if self.deck == cs.STANDARD:
+            self.init_std_deck(num_jokers)
+        elif self.deck == cs.PINOCHLE:
+            assert num_jokers == 0, "Jokers are not part of the typical Pinochle deck."
+            self.init_pinochle_deck()
+        self.shuffle()
 
     def __len__(self):
         return len(self.cards)
@@ -26,12 +29,12 @@ class Deck:
         """
         self.cards = []
         for val in Value.allowed:
-            if num_jokers == 0 and val != Constants.JOKER:
+            if num_jokers == 0 and val != cs.JOKER:
                 for suit in Suits.allowed:
-                    self.cards.append(Card(suit=suit, value=val))
-            elif num_jokers > 0 and val == Constants.JOKER:
+                    self.cards.append(Card(value=val, suit=suit))
+            elif num_jokers > 0 and val == cs.JOKER:
                 for i in range(num_jokers):
-                    self.cards.append(Card(suit=None, value=Constants.JOKER))
+                    self.cards.append(Card(value=cs.JOKER, suit=None))
 
     def init_pinochle_deck(self):
         """
@@ -40,10 +43,22 @@ class Deck:
         :return: Modifies self.cards in place.
         """
         self.cards = []
-        allwd_val = np.array((9, 10, Constants.JACK, Constants.QUEEN, Constants.KING, Constants.ACE))
+        allwd_val = {cs.NINE, cs.TEN, cs.JACK, cs.QUEEN, cs.KING, cs.ACE}
         for val in allwd_val:
             for suit in Suits.allowed:
-                self.cards.append(Card(suit=suit, value=val))
+                self.cards.append(Card(value=val, suit=suit))
 
     def shuffle(self):
-        pass
+        random.shuffle(self.cards)
+
+    def show_top_n(self, n):
+        """
+        Purely for testing, no serious functionality here.
+        :param n: Number of cards to show.
+        :return: Prints out order of cards from top to bottom, up to n.
+        """
+        for i, card in enumerate(self.cards):
+            if i == n:
+                break
+            else:
+                print(str(i+1)+":", card.value, "of", card.suit)
