@@ -21,6 +21,9 @@ class Deck:
     def __len__(self):
         return len(self.cards)
 
+    def __getitem__(self, item):
+        return self.cards[item]
+
     def init_std_deck(self, num_jokers=0):
         """
         Initializes deck to the standard configuration of 52 cards (13 cards of all 4 suits).
