@@ -50,6 +50,7 @@ class Deck:
         for val in allwd_val:
             for suit in Suits.allowed:
                 self.cards.append(Card(value=val, suit=suit))
+                self.cards.append(Card(value=val, suit=suit))
 
     def shuffle(self):
         random.shuffle(self.cards)
@@ -64,4 +65,4 @@ class Deck:
             if i == n:
                 break
             else:
-                print(str(i+1)+":", card.value, "of", card.suit)
+                print(str(i+1) + ":", card)
