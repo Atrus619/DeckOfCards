@@ -1,24 +1,26 @@
-from classes.Suits import Suits
-from classes.Value import Value
-from classes.Card import Card
-from classes.Deck import Deck
-from util.Constants import Constants as cs
-from classes.Hand import Hand
+from Pinochle.Game import Game
+from classes.Player import Player
+from Pinochle.Trick import Trick
 
+player_1 = Player("Romulus")
+player_2 = Player("Remus")
+player_list = [player_1, player_2]
+game = Game("pinochle", player_list)
 
-card = Card(cs.TEN, cs.SPADES)
+print("In the red corner: " + player_1.name)
+print("In the blue corner: " + player_2.name)
+game.deal()
+print("Trump of the round: " + game.trump)
 
-print(card.suit)
-print(card.value)
+trick = Trick(player_list, game.trump)
+card_1 = game.hands[player_1].pull_card(game.hands[player_1][0])
+card_2 = game.hands[player_2].pull_card(game.hands[player_2][0])
 
-hand = Hand()
-deck = Deck()
-card1 = Card('two', 'hearts')
-card2 = Card('three', 'hearts')
-card3 = Card('two', 'hearts')
+print("LETS GET READY TO RUMBLE!!!!!!!!!!!!!!!!!!!!!!!")
+print("Card 1: " + str(card_1))
+print("Card 2: " + str(card_2))
 
-card_list = [card1, card2, card3]
+result = trick.compare_cards(card_1, card_2)
 
-hand.draw(card_list)
-hand2 = Hand()
-hand2.draw(card_list)
+print("VICTOR : " + str(result))
+

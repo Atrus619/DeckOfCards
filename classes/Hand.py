@@ -21,7 +21,7 @@ class Hand:
         else:
             return True
 
-    def draw(self, cards_list):
+    def add_cards(self, cards_list):
         """
         Adds cards to hand.
         :param cards_list: List of cards to add.
@@ -32,7 +32,7 @@ class Hand:
         for card in cards_list:
             self.cards.append(card)
 
-    def drop(self, cards_list):
+    def drop_cards(self, cards_list):
         """
         Removes cards from hand.
         :param cards_list: List of cards to remove.
@@ -52,3 +52,13 @@ class Hand:
         for card in self.cards:
             i += 1
             print(str(i) + ":", card)
+
+    def clear(self):
+        self.cards = []
+
+    def pull_card(self, card):
+        assert card in self.cards
+
+        self.cards.remove(card)
+        return card
+
