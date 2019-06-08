@@ -2,3 +2,7 @@
 .gitignore
 .idea/
 venv/
+*.pyc
+classes/*.pyc
+classes/__pycache__
+util/__pycache__

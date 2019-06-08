@@ -9,7 +9,7 @@ class Hand:
         return len(self.cards)
 
     def __eq__(self, other):
-        # TODO: Feel free to optimize this. I was bored. Sorting would be ideal...but sounds complicated...
+        # TODO: Feel free to optimize this. I was bored. Sorting would be ideal...but sounds complicated...USE DICTIONARIES
         if not isinstance(other, self.__class__):
             return False
         elif len(self.cards) != len(other.cards):

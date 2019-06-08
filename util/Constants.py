@@ -6,7 +6,6 @@ class Constants:
     DIAMONDS = "DIAMONDS"
 
     # Values
-    ONE = "ONE"
     TWO = "TWO"
     THREE = "THREE"
     FOUR = "FOUR"
