@@ -46,4 +46,3 @@ class Trick:
 
         else:
             return 1
-

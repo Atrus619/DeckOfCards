@@ -1,6 +1,7 @@
 from util.Constants import Constants as cs
 from classes.Deck import Deck
 from classes.Hand import Hand
+from Pinochle.Meld import Meld
 
 
 # Pinochle rules: https://www.pagat.com/marriage/pin2hand.html
@@ -19,10 +20,12 @@ class Game:
             self.deck = Deck()
 
         self.hands = {}
+        self.melds = {}
         self.scores = {}
 
         for player in self.players:
             self.hands[player] = Hand()
+            self.melds[player] = Meld()
             self.scores[player] = [0]
 
     def deal(self):
