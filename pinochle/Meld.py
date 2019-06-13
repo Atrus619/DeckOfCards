@@ -18,14 +18,14 @@ class Meld(Hand):
     def calculate_score(self, card_list):
         # take all values from dict
         # in case of marriage, take out the 3 dicts, add to the first list
-        # card_dict = list_to_dict(card_list)
+        card_dict = list_to_dict(card_list)
 
         for combo in self.combinations:
             if type(self.combinations[combo][0]) is list:
-                if card_list in self.combinations[combo][0]:
+                if card_dict in self.combinations[combo][0]:
                     return self.combinations[combo][1]
             else:
-                if card_list == self.combinations[combo][0]:
+                if card_dict == self.combinations[combo][0]:
                     return self.combinations[combo][1]
 
     def validate_move(self):
@@ -60,7 +60,7 @@ class Meld(Hand):
             self.combinations[value[0] + "_AROUND"] = (list_to_dict(list_around), value[1])
 
         # Class C
-        pinochle_list = [hash(Card(cs.QUEEN, cs.SPADES)), hash(Card(cs.JACK, cs.DIAMONDS))]
+        pinochle_list = [Card(cs.QUEEN, cs.SPADES), Card(cs.JACK, cs.DIAMONDS)]
         self.combinations["PINOCHLE"] = (list_to_dict(pinochle_list), 40)
 
         double_pinochle_list = pinochle_list + pinochle_list
