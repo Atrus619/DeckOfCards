@@ -29,11 +29,11 @@ result = trick.compare_cards(card_1, card_2)
 
 print("VICTOR : " + str(result))
 
-test_card_list = list_to_dict([hash((cs.QUEEN, cs.SPADES)), hash((cs.JACK, cs.DIAMONDS))])
+test_card_list = [Card(cs.QUEEN, cs.SPADES), Card(cs.JACK, cs.DIAMONDS)]
 
 meld = Meld(cs.CLUBS)
 
 # TODO: NEED TO HASH EVERYTHING EVERYWHERE otherwise compares memory address vs hash value
 print("COMBO SCORE : " + str(meld.calculate_score(test_card_list)))
 
-# meld.combinations["PINOCHLE"]
+# meld.combinations["PINOCHLE"]  ss
