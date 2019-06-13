@@ -1,6 +1,11 @@
-from Pinochle.Game import Game
+from pinochle.Game import Game
 from classes.Player import Player
-from Pinochle.Trick import Trick
+from pinochle.Trick import Trick
+from classes.Card import Card
+from pinochle.Meld import Meld
+from util.Util import *
+from util.Constants import Constants as cs
+
 
 player_1 = Player("Romulus")
 player_2 = Player("Remus")
@@ -23,3 +28,12 @@ print("Card 2: " + str(card_2))
 result = trick.compare_cards(card_1, card_2)
 
 print("VICTOR : " + str(result))
+
+test_card_list = list_to_dict([hash((cs.QUEEN, cs.SPADES)), hash((cs.JACK, cs.DIAMONDS))])
+
+meld = Meld(cs.CLUBS)
+
+# TODO: NEED TO HASH EVERYTHING EVERYWHERE otherwise compares memory address vs hash value
+print("COMBO SCORE : " + str(meld.calculate_score(test_card_list)))
+
+# meld.combinations["PINOCHLE"]

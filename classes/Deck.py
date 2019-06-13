@@ -17,7 +17,7 @@ class Deck:
         if self.deck == cs.STANDARD:
             self.init_std_deck(num_jokers)
         elif self.deck == cs.PINOCHLE:
-            assert num_jokers == 0, "Jokers are not part of the typical Pinochle deck."
+            assert num_jokers == 0, "Jokers are not part of the typical pinochle deck."
             self.init_pinochle_deck()
 
         self.shuffle()

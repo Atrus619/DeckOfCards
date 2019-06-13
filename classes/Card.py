@@ -20,12 +20,10 @@ class Card:
         return 1
 
     def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            val_check = self.value == other.value
-            suit_check = self.suit == other.suit
-            return val_check & suit_check
-        else:
-            return False
+        return (self.value, self.suit) == (other.value, other.suit)
 
     def __str__(self):
         return self.value + " of " + self.suit
+
+    def __hash__(self):
+        return hash((self.value, self.suit))
