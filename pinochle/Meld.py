@@ -1,19 +1,14 @@
-from classes.Hand import Hand
 from util.Util import *
 from classes.Card import Card
 from classes.Suits import Suits
 from util.Constants import Constants as cs
 
 
-class Meld(Hand):
+class Meld:
     def __init__(self, trump):
-        super(Meld, self).__init__()
         self.trump = trump
         self.combinations = {}
         self.initialize_combinations()
-
-    def show(self):
-        pass
 
     def calculate_score(self, card_list):
         # take all values from dict
@@ -28,7 +23,9 @@ class Meld(Hand):
                 if card_dict == self.combinations[combo][0]:
                     return self.combinations[combo][1]
 
-    def validate_move(self):
+        return 0
+
+    def validate_meld(self):
         pass
 
     def initialize_combinations(self):

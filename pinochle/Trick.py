@@ -25,24 +25,24 @@ class Trick:
         value_map = cs.STANDARD_CARDS_VALUE
 
         if card_1 == card_2:
-            return 1
+            return 0
 
         if self.trump == card_1.suit:
             if self.trump != card_2.suit:
                 return card_1
             elif value_map[card_1.value] >= value_map[card_2.value]:
-                return 1
+                return 0
             else:
-                return 2
+                return 1
 
         elif self.trump == card_2.suit:
-            return 2
+            return 1
 
         elif card_1.suit == card_2.suit:
             if value_map[card_1.value] >= value_map[card_2.value]:
-                return 1
+                return 0
             else:
-                return 2
+                return 1
 
         else:
-            return 1
+            return 0
