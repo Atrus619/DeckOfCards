@@ -11,14 +11,17 @@ class Meld:
         self.initialize_combinations()
 
     def calculate_score(self, card_list):
-        # take all values from dict
-        # in case of marriage, take out the 3 dicts, add to the first list
         card_dict = list_to_dict(card_list)
 
         for combo in self.combinations:
-            if type(self.combinations[combo][0]) is list:
-                if card_dict in self.combinations[combo][0]:
-                    return self.combinations[combo][1]
+            if type(self.combinations[combo]) is list:
+                # this is a special case for marriage
+                # marriages are stored in a list of tuples,
+                # first value is the dict of the marriage
+                # second value is the score of that marriage
+                for marriage in self.combinations[combo]:
+                    if card_dict == marriage[0]:
+                        return marriage[1]
             else:
                 if card_dict == self.combinations[combo][0]:
                     return self.combinations[combo][1]

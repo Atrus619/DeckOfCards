@@ -41,20 +41,24 @@ class Game:
         self.trump = self.trump_card.suit
         self.meld = Meld(self.trump)
 
-    # Expected card input: VALUE,SUIT. Example: HAND,ACE,CLUBS
+    # Expected card input: VALUE,SUIT. Example: Hindex + 1
+    # H = hand, M = meld
     def collect_trick_cards(self, player):
         self.hands[player].show("hand")
         self.melds[player].show("meld")
 
         user_input = input(player.name + " select card for trick:")
-        source, value, suit = user_input.split(',')
-        card_input = Card(value, suit)
+        source = user_input[0]
+        index = int(user_input[1:]) - 1
 
-        if source == "HAND":
+        if source == "H":
+            card_input = self.hands[player].cards[index]
             card = self.hands[player].pull_card(card_input)
-        elif source == "MELD":
+        elif source == "M":
+            card_input = self.melds[player].cards[index]
             card = self.melds[player].pull_card(card_input)
 
+        print("returning card: " + card.value + " " + card.suit)
         return card
 
     def collect_meld_cards(self, player, limit=12):
@@ -63,6 +67,7 @@ class Game:
         original_hand_cards = deepcopy(self.hands[player])
         original_meld_cards = deepcopy(self.melds[player])
         collected_cards = []
+        score = 0
 
         while len(collected_cards) < limit:
             self.hands[player].show("hand")
@@ -76,19 +81,21 @@ class Game:
             if user_input == 'Y':
                 break
 
-            source, value, suit = user_input.split(',')
+            source = user_input[0]
+            index = int(user_input[1:]) - 1
+
             if first_hand_card:
-                if source != "HAND":
+                if source != "H":
                     print("In case of meld, please select first card from hand.")
                     continue
 
                 first_hand_card = False
 
-            card_input = Card(value, suit)
-
-            if source == "HAND":
+            if source == "H":
+                card_input = self.hands[player].cards[index]
                 card = self.hands[player].pull_card(card_input)
-            elif source == "MELD":
+            elif source == "M":
+                card_input = self.melds[player].cards[index]
                 card = self.melds[player].pull_card(card_input)
 
             collected_cards.append(card)
@@ -113,8 +120,8 @@ class Game:
         player_1 = player_order.pop(priority)
         player_2 = player_order[0]
 
-        card_1 = self.collect_trick_cards(player_1, 1)
-        card_2 = self.collect_trick_cards(player_2, 1)
+        card_1 = self.collect_trick_cards(player_1)
+        card_2 = self.collect_trick_cards(player_2)
 
         # TODO: make all players see all cards played
         print("LETS GET READY TO RUMBLE!!!!!!!!!!!!!!!!!!!!!!!")
@@ -125,22 +132,23 @@ class Game:
 
         print("VICTOR : " + str(result))
 
-        if result == 0:
-            print(player_1.name + " select cards for meld:")
+        copy_of_players = list(self.players)
+        winner = copy_of_players.pop(result)
+        loser = copy_of_players[0]
 
-            while 1:
-                meld, valid = self.collect_cards(player_1)
-                if valid:
-                    print("Invalid combination submitted, please try again.")
-                    break
+        print(winner.name + " select cards for meld:")
 
+        while 1:
+            meld_score, valid = self.collect_meld_cards(winner)
+            if valid:
+                break
+            else:
+                print("Invalid combination submitted, please try again.")
 
-            # TODO: figure out how to add calculated meld score back in, how to have history of it
-            self.melds[player_1].calculate_score(meld)
+        trick_score = trick.calculate_trick_score(card_1, card_2)
+        total_score = meld_score + trick_score
 
-            self.scores[player_1] += result
-        else:
-            self.scores[player_2] += result
+        self.scores[winner].append(self.scores[winner][-1] + total_score)
+        self.scores[loser].append(self.scores[loser][-1])
 
-        pass
 

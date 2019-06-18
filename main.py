@@ -17,20 +17,27 @@ print("In the blue corner: " + player_2.name)
 game.deal()
 print("Trump of the round: " + game.trump)
 
-trick = Trick(player_list, game.trump)
-card_1 = game.hands[player_1].pull_card(game.hands[player_1][0])
-card_2 = game.hands[player_2].pull_card(game.hands[player_2][0])
+game.play_trick(0)
 
-print("LETS GET READY TO RUMBLE!!!!!!!!!!!!!!!!!!!!!!!")
-print("Card 1: " + str(card_1))
-print("Card 2: " + str(card_2))
+# trick = Trick(player_list, game.trump)
+# card_1 = game.hands[player_1].pull_card(game.hands[player_1][0])
+# card_2 = game.hands[player_2].pull_card(game.hands[player_2][0])
+#
+# print("LETS GET READY TO RUMBLE!!!!!!!!!!!!!!!!!!!!!!!")
+# print("Card 1: " + str(card_1))
+# print("Card 2: " + str(card_2))
+#
+# result = trick.compare_cards(card_1, card_2)
+#
+# print("VICTOR : " + str(result))
+#
+# test_card_list = [Card(cs.QUEEN, cs.SPADES), Card(cs.JACK, cs.DIAMONDS)]
+#
+# meld = Meld(cs.CLUBS)
+#
+# print("COMBO SCORE : " + str(meld.calculate_score(test_card_list)))
 
-result = trick.compare_cards(card_1, card_2)
-
-print("VICTOR : " + str(result))
-
-test_card_list = [Card(cs.QUEEN, cs.SPADES), Card(cs.JACK, cs.DIAMONDS)]
-
-meld = Meld(cs.CLUBS)
-
-print("COMBO SCORE : " + str(meld.calculate_score(test_card_list)))
+# test_card_list = [Card(cs.QUEEN, cs.SPADES), Card(cs.KING, cs.SPADES)]
+# score = game.meld.calculate_score(test_card_list)
+#
+# print("COMBO SCORE : " + str(score))
