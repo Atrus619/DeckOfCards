@@ -26,11 +26,13 @@ class Game:
         self.hands = {}
         self.melds = {}
         self.scores = {}
+        self.meldedCards = {}
 
         for player in self.players:
             self.hands[player] = Hand()
             self.melds[player] = Hand()
             self.scores[player] = [0]
+            self.meldedCards[player] = {}
 
     def deal(self):
         for i in range(12):
@@ -101,14 +103,17 @@ class Game:
             collected_cards.append(card)
 
         if len(collected_cards) > 0:
-            score = self.meld.calculate_score(collected_cards)
+            score, meld_class = self.meld.calculate_score(collected_cards)
 
             if score == 0:
                 self.hands[player] = original_hand_cards
                 self.melds[player] = original_meld_cards
                 valid = False
 
-        return score, valid
+        return score, valid, meld_class
+
+    def update_melded_cards(self, player, card, meld_class, score):
+        self.meldedCards[player][card] = (meld_class, score)
 
     def play_trick(self, priority):
         """
@@ -139,7 +144,7 @@ class Game:
         print(winner.name + " select cards for meld:")
 
         while 1:
-            meld_score, valid = self.collect_meld_cards(winner)
+            meld_score, valid, meld_class = self.collect_meld_cards(winner)
             if valid:
                 break
             else:
