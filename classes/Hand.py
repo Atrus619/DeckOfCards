@@ -47,13 +47,8 @@ class Hand:
                 return False
         return True
 
-    def show(self, name):
-        """
-
-        :param name: type of hand, currently hand or meld
-        :return:
-        """
-        print("Current " + name + ":")
+    def show(self):
+        print("Current Hand:")
 
         i = 0
         for card in self.cards:

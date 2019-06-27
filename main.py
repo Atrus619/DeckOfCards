@@ -2,7 +2,7 @@ from pinochle.Game import Game
 from classes.Player import Player
 from pinochle.Trick import Trick
 from classes.Card import Card
-from pinochle.Meld import Meld
+from pinochle.MeldUtil import MeldUtil
 from util.Util import *
 from util.Constants import Constants as cs
 
