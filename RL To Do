@@ -1,0 +1,22 @@
+Things to do:
+1. Design a state vector
+    This is a numerical vector describing all useful information about the state of the game
+    A. Current hand
+    B. Current meld
+    C. Trump Card
+    D. Unknown
+        1. Cards that haven't been seen
+        2. Cards that have been played, and are no longer in play
+        3. Cards that have been melded by the opponent
+2. Design the outputs/decisions/heads of the agent
+    Each possible decision of the agent will be a separate head and needs to be properly defined
+    A. Which card to play in trick
+    B. Whether to meld/which cards to meld  # CerberusAI
+3. Decide on a learning algorithm, and based on this decide how to set up our pipeline
+4. Decide how to properly evaluate and visualize progress
+    Also clean up the human side and allow it to be played between an AI/human, or human/human.
+    Preferably hosted on website or something.
+5. Research stuff:
+    A. Research how RL handles performing illegal actions in games
+    B. Research how RL handles imperfect information in games
+    C. Research examples of state vectors and how they are assembled
