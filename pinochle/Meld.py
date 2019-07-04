@@ -1,22 +1,24 @@
-from operator import itemgetter
+from operator import attrgetter
 
 
 class Meld:
+    # mt represents a MeldTuple (see class in MeldTuple.py)
     def __init__(self):
         self.melded_cards = []  # List of tuples
 
-    def add_melded_card(self, card, combo, meld_class, score):
-        self.melded_cards.append((card, combo, meld_class, score))
+    def add_melded_card(self, mt):
+        self.melded_cards.append(mt)
 
-    def pull_melded_card(self, card_tuple):
+    def pull_melded_card(self, mt):
         # card_tuple = (card, combo, meld_class, score)
-        assert card_tuple in self.melded_cards, "Somehow you managed to attempt to pull an invalid card. No idea how."
+        assert mt in self.melded_cards, "Somehow you managed to attempt to pull an invalid card. No idea how."
 
-        self.melded_cards.remove(card_tuple)
-        return card_tuple
+        self.melded_cards.remove(mt)
+        return mt
 
     def rearrange_meld(self):
-        self.melded_cards = sorted(self.melded_cards, key=itemgetter(2, 3, 1))  # Sort by meld_class, then score, then combo
+        # Sort by meld_class, then score, then combo
+        self.melded_cards = sorted(self.melded_cards, key=attrgetter('meld_class', 'score', 'combo'))
 
     def show_meld(self):
         self.rearrange_meld()
@@ -24,9 +26,9 @@ class Meld:
         print("Current Meld:")
 
         i = 0
-        for card_tuple in self.melded_cards:
+        for mt in self.melded_cards:
             i += 1
-            print(str(i) + ":", ", ".join([str(val) for val in card_tuple]))
+            print(str(i) + ":", str(mt.card) + ", " + mt.combo + ", " + mt.meld_class + ", " + str(mt.score))
 
     def clear_meld(self):
         self.melded_cards = []

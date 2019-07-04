@@ -4,15 +4,18 @@ from classes.Hand import Hand
 from pinochle.MeldUtil import MeldUtil
 from pinochle.Meld import Meld
 from pinochle.Trick import Trick
+from pinochle.MeldTuple import MeldTuple
 from util.Constants import Constants as cs
 from copy import deepcopy
+import random
+import numpy as np
 
 
 # pinochle rules: https://www.pagat.com/marriage/pin2hand.html
 class Game:
     def __init__(self, name, players):
         self.name = name.upper()
-        self.players = players
+        self.players = players  # This is a list
         self.number_of_players = len(self.players)
         self.dealer = players[0]
         self.trump_card = None
@@ -58,13 +61,19 @@ class Game:
             card_input = self.hands[player].cards[index]
             card = self.hands[player].pull_card(card_input)
         elif source == "M":
-            card_input_tuple = self.melds[player].melded_cards[index]
-            card, _, _, _ = self.melds[player].pull_melded_card(card_input_tuple)
+            mt = self.melds[player].pull_melded_card(self.melds[player].melded_cards[index])
+            card = mt.card
 
-        print("returning card: " + card.value + " " + card.suit)
+        print("returning card: " + str(card))
         return card
 
     def collect_meld_cards(self, player, limit=12):
+        """
+        Collecting cards for meld scoring from player who won trick
+        :param player: Player we are collecting from
+        :param limit: Maximum number of cards that can be collected
+        :return: list of MeldTuples and whether the interaction was valid (boolean)
+        """
         first_hand_card = True
         valid = True
         original_hand_cards = deepcopy(self.hands[player])
@@ -102,12 +111,11 @@ class Game:
                 card = self.hands[player].pull_card(card_input)
                 collected_hand_cards.append(card)
             elif source == "M":
-                card_input_tuple = self.melds[player].melded_cards[index]
-                card, _, original_meld_class, original_meld_score = self.melds[player].pull_melded_card(card_input_tuple)
-                collected_meld_cards.append((card, original_meld_class, original_meld_score))
+                mt = self.melds[player].pull_melded_card(self.melds[player].melded_cards[index])
+                collected_meld_cards.append(mt)
 
         # Combine collected hand and meld card lists for score calculation
-        collected_cards = collected_hand_cards + [tup[0] for tup in collected_meld_cards]
+        collected_cards = collected_hand_cards + [mt.card for mt in collected_meld_cards]
 
         if len(collected_cards) > 0:
             score, meld_class, combo_name = self.meld_util.calculate_score(collected_cards)
@@ -115,10 +123,10 @@ class Game:
             if score == 0:
                 valid = False
             else:
-                for tup in collected_meld_cards:
-                    original_meld_class = tup[1]
+                for mt in collected_meld_cards:
+                    original_meld_class = mt.meld_class
                     if original_meld_class == meld_class:
-                        original_meld_score = tup[2]
+                        original_meld_score = mt.score
                         if original_meld_score <= score:
                             valid = False
                             break
@@ -126,18 +134,21 @@ class Game:
                 self.hands[player] = original_hand_cards
                 self.melds[player] = original_meld_cards
 
-        return score, valid, meld_class, collected_cards, combo_name
+        return [MeldTuple(card, combo_name, meld_class, score) for card in collected_cards], valid
 
     def play_trick(self, priority):
         """
         :param priority: 0 or 1 for index in player list
-        :return: TBD
+        :return: index of winner (priority for next trick)
         """
         trick = Trick(self.players, self.trump)
+
+        # Determine which player goes first based on priority arg
         player_order = list(self.players)
         player_1 = player_order.pop(priority)
         player_2 = player_order[0]
 
+        # Collect card for trick from each player based on order
         card_1 = self.collect_trick_cards(player_1)
         card_2 = self.collect_trick_cards(player_2)
 
@@ -146,25 +157,40 @@ class Game:
         print("Card 1: " + str(card_1))
         print("Card 2: " + str(card_2))
 
+        # Determine winner of trick based on collected cards
         result = trick.compare_cards(card_1, card_2)
 
         print("VICTOR : " + str(result))
 
+        # Separate winner and loser for scoring, melding, and next hand
         copy_of_players = list(self.players)
         winner = copy_of_players.pop(result)
         loser = copy_of_players[0]
 
+        # Winner draws a card from the stock, followed by the loser drawing a card from the stock
+        # TODO: Come back here and allow winner to choose when down to last 2 cards (optional af)
+        self.hands[winner].add_cards(self.deck.pull_top_cards(1))
+        if len(self.deck) == 0:
+            self.hands[loser].add_cards(self.trump_card)
+        else:
+            self.hands[loser].add_cards(self.deck.pull_top_cards(1))
+
+        # Winner can now meld if they so choose
         print(winner.name + " select cards for meld:")
 
         # Verify that meld is valid. If meld is invalid, force the user to retry.
         while 1:
-            meld_score, valid, meld_class, collected_cards, combo_name = self.collect_meld_cards(winner)
+            mt_list, valid = self.collect_meld_cards(winner)
             if valid:
                 break
             else:
                 print("Invalid combination submitted, please try again.")
 
         # Update scores
+        if len(mt_list) == 0:  # No cards melded, so score is 0
+            meld_score = 0
+        else:
+            meld_score = mt_list[0].score  # Score is the same for all MeldTuples in mt_list
         trick_score = trick.calculate_trick_score(card_1, card_2)
         total_score = meld_score + trick_score
 
@@ -172,6 +198,16 @@ class Game:
         self.scores[loser].append(self.scores[loser][-1])
 
         # Update winner's meld
-        for card in collected_cards:
-            self.melds[winner].add_melded_card(card, combo_name, meld_class, meld_score)
+        for mt in mt_list:
+            self.melds[winner].add_melded_card(mt)
 
+        return result
+
+    def play(self):
+        priority = random.randint(0, 1)
+        while len(self.deck) > 0:
+            priority = self.play_trick(priority)
+        final_scores = [self.scores[player][-1] for player in self.players]
+        winner_index = np.argmax(final_scores)
+        print("Winner:", str(self.players[winner_index]), "Score:", final_scores[winner_index])
+        print("Loser:", str(self.players[1-winner_index]), "Score:", final_scores[1-winner_index])

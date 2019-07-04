@@ -17,7 +17,7 @@ print("In the blue corner: " + player_2.name)
 game.deal()
 print("Trump of the round: " + game.trump)
 
-game.play_trick(0)
+game.play()
 
 # trick = Trick(player_list, game.trump)
 # card_1 = game.hands[player_1].pull_card(game.hands[player_1][0])

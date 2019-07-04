@@ -12,3 +12,6 @@ class Player:
 
         self.ai = ai
 
+    def __str__(self):
+        return self.name
+

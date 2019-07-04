@@ -71,3 +71,17 @@ class MeldUtil:
         double_pinochle_list = pinochle_list + pinochle_list
         self.combinations["DOUBLE_PINOCHLE"] = (list_to_dict(double_pinochle_list), 300, "C")
 
+    @staticmethod
+    def collect_cards_check(input, hand, meld):
+        """
+        Checks user input for collecting cards
+        Valid entries consist of:
+            1. H followed by a possible card from their hand
+            2. M followed by a possible card from their meld
+            3. Y to exit
+        :param input: input string from user
+        :param hand: player's current hand
+        :param meld: player's current meld
+        :return: true if successful, false if not
+        """
+        pass
