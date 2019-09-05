@@ -1,5 +1,5 @@
 class Player:
-    def __init__(self, name, ai=False):
+    def __init__(self, name):
         """
         """
         self.motto = "Don't hate the player, hate the game."
@@ -9,8 +9,6 @@ class Player:
         """
 
         self.name = name
-
-        self.ai = ai
 
     def __str__(self):
         return self.name

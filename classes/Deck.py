@@ -3,7 +3,7 @@ from classes.Value import Value
 from classes.Card import Card
 from util.Constants import Constants as cs
 import random
-import copy
+from operator import attrgetter
 
 
 class Deck:
@@ -61,6 +61,14 @@ class Deck:
 
     def shuffle(self):
         random.shuffle(self.cards)
+
+    def return_sorted_deck(self):
+        """
+        Utility function for generating state.
+        :return: List of cards if the deck were sorted.
+        """
+        unique_cards = list(set(self.cards))
+        return sorted(unique_cards, key=attrgetter('suit', 'numeric_value'))
 
     def show_top_cards(self, number):
         """

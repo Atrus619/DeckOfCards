@@ -8,6 +8,7 @@ class Card:
 
         self.value = value.upper()
         self.suit = suit.upper()
+        self.numeric_value = cs.STANDARD_CARDS_VALUE[self.value]
 
         if self.value == cs.JOKER:
             assert self.suit is None, "Joker should have suit of None."

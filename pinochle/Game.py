@@ -1,4 +1,4 @@
-from classes.Card import Card
+from pinochle.State import State
 from classes.Deck import Deck
 from classes.Hand import Hand
 from pinochle.MeldUtil import MeldUtil
@@ -38,6 +38,13 @@ class Game:
             self.scores[player] = [0]
             self.meldedCards[player] = {}
 
+    def gen_state(self):
+        """
+        TODO
+        :return: TODO
+        """
+        return State(self)
+
     def deal(self):
         for i in range(12):
             for player in self.players:
@@ -53,7 +60,7 @@ class Game:
         self.hands[player].show()
         self.melds[player].show_meld()
 
-        user_input = input(player.name + " select card for trick:")
+        user_input = player.get_action(state=self.gen_state(), msg=player.name + " select card for trick:")  # TODO: Change this to player-specific state
         source = user_input[0]
         index = int(user_input[1:]) - 1
 
@@ -64,7 +71,7 @@ class Game:
             mt = self.melds[player].pull_melded_card(self.melds[player].melded_cards[index])
             card = mt.card
 
-        print("returning card: " + str(card))
+        print("returning card: " + str(card))  # TODO: Fix this later (possible NULL)
         return card
 
     def collect_meld_cards(self, player, limit=12):
@@ -91,7 +98,7 @@ class Game:
             if first_hand_card:
                 print("For meld please select first card from hand.")
 
-            user_input = input(player.name + " select card, type 'Y' to exit:")
+            user_input = player.get_action(state=self.gen_state(), msg=player.name + " select card, type 'Y' to exit:")  # TODO: Change this to player-specific state
 
             if user_input == 'Y':
                 break
