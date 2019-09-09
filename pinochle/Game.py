@@ -38,11 +38,7 @@ class Game:
             self.scores[player] = [0]
             self.meldedCards[player] = {}
 
-    def gen_state(self):
-        """
-        TODO
-        :return: TODO
-        """
+    def create_state(self):
         return State(self)
 
     def deal(self):
@@ -57,10 +53,7 @@ class Game:
     # Expected card input: VALUE,SUIT. Example: Hindex + 1
     # H = hand, M = meld
     def collect_trick_cards(self, player):
-        self.hands[player].show()
-        self.melds[player].show_meld()
-
-        user_input = player.get_action(state=self.gen_state(), msg=player.name + " select card for trick:")  # TODO: Change this to player-specific state
+        user_input = player.get_action(state=self.create_state(), msg=player.name + " select card for trick:")  # TODO: Change this to player-specific state
         source = user_input[0]
         index = int(user_input[1:]) - 1
 
@@ -93,12 +86,12 @@ class Game:
 
         while len(collected_hand_cards) + len(collected_meld_cards) < limit:
             self.hands[player].show()
-            self.melds[player].show_meld()
+            self.melds[player].show()
 
             if first_hand_card:
                 print("For meld please select first card from hand.")
 
-            user_input = player.get_action(state=self.gen_state(), msg=player.name + " select card, type 'Y' to exit:")  # TODO: Change this to player-specific state
+            user_input = player.get_action(state=self.create_state(), msg=player.name + " select card, type 'Y' to exit:")  # TODO: Change this to player-specific state
 
             if user_input == 'Y':
                 break

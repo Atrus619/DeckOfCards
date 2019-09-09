@@ -14,3 +14,11 @@ class Agent(Player):
         :return: TODO
         """
         return self.model.predict(state)
+
+    def convert_model_output(self, output_index):
+        # TODO
+        # random bot returns 0 to 23
+        # use one_hot_template to determine card
+        # find card in hand
+        # use card
+        pass

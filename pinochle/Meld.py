@@ -20,7 +20,7 @@ class Meld:
         # Sort by meld_class, then score, then combo
         self.melded_cards = sorted(self.melded_cards, key=attrgetter('meld_class', 'score', 'combo'))
 
-    def show_meld(self):
+    def show(self):
         self.rearrange_meld()
 
         print("Current Meld:")

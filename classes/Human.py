@@ -6,5 +6,5 @@ class Human(Player):
         super().__init__(name)
 
     def get_action(self, state, msg):
-        print(state.convert_to_human_readable_format())  # TODO: NAME TBD
+        state.convert_to_human_readable_format(self)  # TODO: NAME TBD
         return input(msg)

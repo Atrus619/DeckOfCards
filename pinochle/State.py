@@ -12,7 +12,6 @@ a single player's hand, values of 0-2. Next 24 values to the second player's han
 
 class State:
     def __init__(self, game):
-        # TODO: Shit happens
         self.game = game
         self.one_hot_template = Deck('pinochle').return_sorted_deck()
 
@@ -22,8 +21,15 @@ class State:
         # import pdb; pdb.set_trace()
         self.global_state = np.concatenate((player1_hand_vector, player2_hand_vector, trump_vector), axis=0)
 
-    def convert_to_human_readable_format(self, state):
-        pass
+    def convert_to_human_readable_format(self, player):
+        self.game.hands[player].show()
+
+        self.game.melds[player].show()
+
+        current_scores = [self.game.scores[player][-1] for player in self.game.players]
+        print("Player 1 Score: ", current_scores[0])
+        print("Player 2 Score: ", current_scores[1])
+
 
     def get_player_state(self, player):
         """
@@ -48,14 +54,13 @@ class State:
         hand = sorted(hand, key=attrgetter('suit', 'numeric_value'))
         output = np.zeros(len(self.one_hot_template))
         last_index = 0
-        # TODO: THIS LOOP IS BUSTED AF
         for hand_index, hand_card in enumerate(hand):
             if hand_index == 0 or hand_card != hand[hand_index - 1]:
                 for template_index, template_card in enumerate(self.one_hot_template):
                     if hand_card == template_card:
                         last_index = template_index
                         output[last_index] = 1
-                    break
+                        break
             else:
                 output[last_index] = 2
 
