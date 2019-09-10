@@ -53,7 +53,11 @@ class Game:
     # Expected card input: VALUE,SUIT. Example: Hindex + 1
     # H = hand, M = meld
     def collect_trick_cards(self, player):
-        user_input = player.get_action(state=self.create_state(), msg=player.name + " select card for trick:")  # TODO: Change this to player-specific state
+        if type(player).__name__ == 'Human':
+            user_input = player.get_action(state=self.create_state(), msg=player.name + " select card for trick:")
+        else:  # Bot
+            action = player.get_action(state=self.create_state())
+            user_input = player.convert_model_output(output_index=action, game=self, hand=True)
         source = user_input[0]
         index = int(user_input[1:]) - 1
 
@@ -91,7 +95,11 @@ class Game:
             if first_hand_card:
                 print("For meld please select first card from hand.")
 
-            user_input = player.get_action(state=self.create_state(), msg=player.name + " select card, type 'Y' to exit:")  # TODO: Change this to player-specific state
+            if type(player).__name__ == 'Human':
+                user_input = player.get_action(state=self.create_state(), msg=player.name + " select card, type 'Y' to exit:")
+            else:  # Bot
+                action = player.get_action(state=self.create_state())
+                user_input = player.convert_model_output(output_index=action, game=self, hand=False)
 
             if user_input == 'Y':
                 break

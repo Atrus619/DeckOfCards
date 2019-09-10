@@ -1,9 +1,15 @@
 from pinochle.Game import Game
 from classes.Human import Human
+from classes.Agent import Agent
+from pinochle.scripted_bots.RandomBot import RandomBot
 from pinochle.State import State
 
 player_1 = Human("Romulus")
-player_2 = Human("Remus")
+
+bot = RandomBot(24)
+player_2 = Agent(name="007", model=bot)
+bot.assign_player(player_2)
+
 player_list = [player_1, player_2]
 game = Game("pinochle", player_list)
 
@@ -18,5 +24,5 @@ state.convert_to_human_readable_format(player_1)
 
 print(state.global_state)
 
-# game.play()
+game.play()
 

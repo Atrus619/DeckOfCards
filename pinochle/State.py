@@ -1,6 +1,6 @@
 import numpy as np
 from operator import attrgetter
-from classes.Deck import Deck
+from util.Vectors import Vectors as vs
 
 """
 The strategy is to create a global state with all available information.
@@ -13,7 +13,7 @@ a single player's hand, values of 0-2. Next 24 values to the second player's han
 class State:
     def __init__(self, game):
         self.game = game
-        self.one_hot_template = Deck('pinochle').return_sorted_deck()
+        self.one_hot_template = vs.PINOCHLE_ONE_HOT_VECTOR
 
         player1_hand_vector = self.build_hand_vector(self.game.hands[self.game.players[0]])
         player2_hand_vector = self.build_hand_vector(self.game.hands[self.game.players[1]])
@@ -29,7 +29,6 @@ class State:
         current_scores = [self.game.scores[player][-1] for player in self.game.players]
         print("Player 1 Score: ", current_scores[0])
         print("Player 2 Score: ", current_scores[1])
-
 
     def get_player_state(self, player):
         """
