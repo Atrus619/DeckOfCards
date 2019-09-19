@@ -3,6 +3,7 @@ from classes.Human import Human
 from classes.Agent import Agent
 from pinochle.scripted_bots.RandomBot import RandomBot
 from pinochle.State import State
+from util import db
 
 player_1 = Human("Romulus")
 
@@ -15,14 +16,21 @@ game = Game("pinochle", player_list)
 
 # print("In the red corner: " + player_1.name)
 # print("In the blue corner: " + player_2.name)
-game.deal()
-# print("Trump of the round: " + game.trump)
+# game.deal()
+# # print("Trump of the round: " + game.trump)
+#
+# state = State(game)
+#
+# state.convert_to_human_readable_format(player_1)
+#
+# print(state.global_state)
+#
+# game.play()
 
-state = State(game)
+db.get_exp()
 
-state.convert_to_human_readable_format(player_1)
+db.get_exp()
 
-print(state.global_state)
+db.get_exp()
 
-game.play()
-
+db.get_exp()
