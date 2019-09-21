@@ -14,7 +14,6 @@ class Agent(Player):
         :param state: TODO
         :return: TODO
         """
-        # import pdb; pdb.set_trace()
         return self.model.predict(state)
 
     def convert_model_output(self, output_index, game, hand=True):

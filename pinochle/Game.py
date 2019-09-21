@@ -9,11 +9,13 @@ from util.Constants import Constants as cs
 from copy import deepcopy
 import random
 import numpy as np
+from util.state_logger import log_state
 
 
 # pinochle rules: https://www.pagat.com/marriage/pin2hand.html
 class Game:
-    def __init__(self, name, players):
+    def __init__(self, name, players, run_id="42069"):
+        self.run_id = run_id
         self.name = name.upper()
         self.players = players  # This is a list
         self.number_of_players = len(self.players)
@@ -52,11 +54,11 @@ class Game:
 
     # Expected card input: VALUE,SUIT. Example: Hindex + 1
     # H = hand, M = meld
-    def collect_trick_cards(self, player):
+    def collect_trick_cards(self, player, state):
         if type(player).__name__ == 'Human':
-            user_input = player.get_action(state=self.create_state(), msg=player.name + " select card for trick:")
+            user_input = player.get_action(state, msg=player.name + " select card for trick:")
         else:  # Bot
-            action = player.get_action(state=self.create_state())
+            action = player.get_action(state)
             user_input = player.convert_model_output(output_index=action, game=self, hand=True)
         source = user_input[0]
         index = int(user_input[1:]) - 1
@@ -71,7 +73,7 @@ class Game:
         print("returning card: " + str(card))  # TODO: Fix this later (possible NULL)
         return card
 
-    def collect_meld_cards(self, player, limit=12):
+    def collect_meld_cards(self, player, state, limit=12):
         """
         Collecting cards for meld scoring from player who won trick
         :param player: Player we are collecting from
@@ -96,9 +98,9 @@ class Game:
                 print("For meld please select first card from hand.")
 
             if type(player).__name__ == 'Human':
-                user_input = player.get_action(state=self.create_state(), msg=player.name + " select card, type 'Y' to exit:")
+                user_input = player.get_action(state, msg=player.name + " select card, type 'Y' to exit:")
             else:  # Bot
-                action = player.get_action(state=self.create_state())
+                action = player.get_action(state)
                 user_input = player.convert_model_output(output_index=action, game=self, hand=False)
 
             if user_input == 'Y':
@@ -149,6 +151,8 @@ class Game:
         :param priority: 0 or 1 for index in player list
         :return: index of winner (priority for next trick)
         """
+        trick_state = self.create_state()
+
         trick = Trick(self.players, self.trump)
 
         # Determine which player goes first based on priority arg
@@ -157,8 +161,8 @@ class Game:
         player_2 = player_order[0]
 
         # Collect card for trick from each player based on order
-        card_1 = self.collect_trick_cards(player_1)
-        card_2 = self.collect_trick_cards(player_2)
+        card_1 = self.collect_trick_cards(player_1, trick_state)
+        card_2 = self.collect_trick_cards(player_2, trick_state)
 
         # TODO: make all players see all cards played
         print("LETS GET READY TO RUMBLE!!!!!!!!!!!!!!!!!!!!!!!")
@@ -187,8 +191,10 @@ class Game:
         print(winner.name + " select cards for meld:")
 
         # Verify that meld is valid. If meld is invalid, force the user to retry.
+        meld_state = self.create_state()
+
         while 1:
-            mt_list, valid = self.collect_meld_cards(winner)
+            mt_list, valid = self.collect_meld_cards(winner, meld_state)
             if valid:
                 break
             else:
@@ -201,6 +207,10 @@ class Game:
             meld_score = mt_list[0].score  # Score is the same for all MeldTuples in mt_list
         trick_score = trick.calculate_trick_score(card_1, card_2)
         total_score = meld_score + trick_score
+
+        # log states and actions
+        log_state(trick_state, meld_state, card_1, card_2,
+                  mt_list, trick_score, meld_score, winner, self.players[0], self.players[1], self.run_id)
 
         self.scores[winner].append(self.scores[winner][-1] + total_score)
         self.scores[loser].append(self.scores[loser][-1])

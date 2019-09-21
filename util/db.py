@@ -12,6 +12,15 @@ def open_connection():
     return connection
 
 
+def insert_exp(cursor, agent_id, run_id, vector, reward, action):
+    cursor.execute(
+            "INSERT INTO cards.experience \
+            (ins_ts, agent_id, run_id, vector, reward, action) \
+            VALUES(now(), " + agent_id + ", " + run_id + ", " + vector + ", " + reward + ", " + action + ");"
+            )
+
+
+
 def get_exp():
     connection = open_connection()
 

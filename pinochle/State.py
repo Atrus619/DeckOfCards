@@ -43,6 +43,8 @@ class State:
 
         return np.concatenate((player_hand, global_info), axis=0)
 
+
+    # TODO: move these mf build vectors to their respective classes so we don't have this mess here
     def build_hand_vector(self, hand):
         """
         Produce a one hot vector based on the deck template for a player's hand
@@ -65,6 +67,7 @@ class State:
 
         return output
 
+    # TODO: move these mf build vectors to their respective classes so we don't have this mess here
     def build_trump_vector(self):
         """
         Produce one hot vector based on the trump card in the current game
@@ -77,3 +80,32 @@ class State:
             if suit == self.game.trump:
                 output[index] = 1
                 return output
+
+    # TODO: move these mf build vectors to their respective classes so we don't have this mess here
+    def build_card_vector(self, card):
+        """
+        Produce a one hot vector based on the deck template for a card
+        :param card: card
+        :return: NumPy Array
+        """
+
+        output = np.zeros(len(self.one_hot_template))
+        for template_index, template_card in enumerate(self.one_hot_template):
+            if card == template_card:
+                last_index = template_index
+                output[last_index] = 1
+                return output
+
+    # TODO: move these mf build vectors to their respective classes so we don't have this mess here
+    def build_meld_cards_vector(self, mt_list):
+        """
+        Produce a one hot vector based on the deck template for a player's meld cards
+        :param mt_list: List of meld tuples
+        :return: NumPy Array
+        """
+
+        output = np.zeros(len(self.one_hot_template))
+        for meld_tuple in mt_list:
+            output += self.build_card_vector(meld_tuple[0].card)
+
+        return output
