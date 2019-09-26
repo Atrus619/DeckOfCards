@@ -10,3 +10,6 @@ def list_to_dict(card_list):
 
     return card_dict
 
+
+def print_divider():
+    print('---------------------------------------------------------------------------------')

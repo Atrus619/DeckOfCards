@@ -6,6 +6,7 @@ from pinochle.Meld import Meld
 from pinochle.Trick import Trick
 from pinochle.MeldTuple import MeldTuple
 from util.Constants import Constants as cs
+from util.Util import print_divider
 from copy import deepcopy
 import random
 import numpy as np
@@ -52,7 +53,7 @@ class Game:
         self.trump = self.trump_card.suit
         self.meld_util = MeldUtil(self.trump)
 
-    # Expected card input: VALUE,SUIT. Example: Hindex + 1
+    # Expected card input: VALUE,SUIT. Example: Hindex
     # H = hand, M = meld
     def collect_trick_cards(self, player, state):
         if type(player).__name__ == 'Human':
@@ -61,7 +62,7 @@ class Game:
             action = player.get_action(state)
             user_input = player.convert_model_output(output_index=action, game=self, hand=True)
         source = user_input[0]
-        index = int(user_input[1:]) - 1
+        index = int(user_input[1:])
 
         if source == "H":
             card_input = self.hands[player].cards[index]
@@ -70,7 +71,8 @@ class Game:
             mt = self.melds[player].pull_melded_card(self.melds[player].melded_cards[index])
             card = mt.card
 
-        print("returning card: " + str(card))  # TODO: Fix this later (possible NULL)
+        print_divider()
+        print("Player " + player.name + " plays: " + str(card))  # TODO: Fix this later (possible NULL)
         return card
 
     def collect_meld_cards(self, player, state, limit=12):
@@ -91,10 +93,13 @@ class Game:
         combo_name = None
 
         while len(collected_hand_cards) + len(collected_meld_cards) < limit:
+            print_divider()
             self.hands[player].show()
+            print_divider()
             self.melds[player].show()
 
             if first_hand_card:
+                print_divider()
                 print("For meld please select first card from hand.")
 
             if type(player).__name__ == 'Human':
@@ -107,10 +112,11 @@ class Game:
                 break
 
             source = user_input[0]
-            index = int(user_input[1:]) - 1
+            index = int(user_input[1:])
 
             if first_hand_card:
                 if source != "H":
+                    print_divider()
                     print("In case of meld, please select first card from hand.")
                     continue
 
@@ -165,14 +171,15 @@ class Game:
         card_2 = self.collect_trick_cards(player_2, trick_state)
 
         # TODO: make all players see all cards played
+        print_divider()
         print("LETS GET READY TO RUMBLE!!!!!!!!!!!!!!!!!!!!!!!")
         print("Card 1: " + str(card_1))
         print("Card 2: " + str(card_2))
 
         # Determine winner of trick based on collected cards
         result = trick.compare_cards(card_1, card_2)
-
-        print("VICTOR : " + str(result))
+        print_divider()
+        print("VICTOR : " + str(player_1.name if result == 0 else player_2.name))
 
         # Separate winner and loser for scoring, melding, and next hand
         copy_of_players = list(self.players)
@@ -188,6 +195,7 @@ class Game:
             self.hands[loser].add_cards(self.deck.pull_top_cards(1))
 
         # Winner can now meld if they so choose
+        print_divider()
         print(winner.name + " select cards for meld:")
 
         # Verify that meld is valid. If meld is invalid, force the user to retry.
@@ -198,6 +206,7 @@ class Game:
             if valid:
                 break
             else:
+                print_divider()
                 print("Invalid combination submitted, please try again.")
 
         # Update scores
@@ -227,5 +236,6 @@ class Game:
             priority = self.play_trick(priority)
         final_scores = [self.scores[player][-1] for player in self.players]
         winner_index = np.argmax(final_scores)
+        print_divider()
         print("Winner:", str(self.players[winner_index]), "Score:", final_scores[winner_index])
         print("Loser:", str(self.players[1-winner_index]), "Score:", final_scores[1-winner_index])

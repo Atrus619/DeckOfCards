@@ -27,8 +27,8 @@ class Meld:
 
         i = 0
         for mt in self.melded_cards:
-            i += 1
             print(str(i) + ":", str(mt.card) + ", " + mt.combo + ", " + mt.meld_class + ", " + str(mt.score))
+            i += 1
 
     def clear_meld(self):
         self.melded_cards = []

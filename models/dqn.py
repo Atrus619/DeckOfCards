@@ -4,6 +4,7 @@ from pinochle.Game import Game
 from classes.Agent import Agent
 from pinochle.scripted_bots.RandomBot import RandomBot
 
+
 class DQN:
     """
     deep Q learning network

@@ -1,6 +1,7 @@
 import numpy as np
 from operator import attrgetter
 from util.Vectors import Vectors as vs
+from util.Util import print_divider
 
 """
 The strategy is to create a global state with all available information.
@@ -22,11 +23,14 @@ class State:
         self.global_state = np.concatenate((player1_hand_vector, player2_hand_vector, trump_vector), axis=0)
 
     def convert_to_human_readable_format(self, player):
+        print_divider()
         self.game.hands[player].show()
 
+        print_divider()
         self.game.melds[player].show()
 
         current_scores = [self.game.scores[player][-1] for player in self.game.players]
+        print_divider()
         print("Player 1 Score: ", current_scores[0])
         print("Player 2 Score: ", current_scores[1])
 
@@ -42,7 +46,6 @@ class State:
         global_info = self.global_state[2 * len(self.one_hot_template):]
 
         return np.concatenate((player_hand, global_info), axis=0)
-
 
     # TODO: move these mf build vectors to their respective classes so we don't have this mess here
     def build_hand_vector(self, hand):

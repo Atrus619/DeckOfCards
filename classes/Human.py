@@ -1,5 +1,5 @@
 from classes.Player import Player
-
+from util.Util import print_divider
 
 class Human(Player):
     def __init__(self, name):
@@ -7,4 +7,5 @@ class Human(Player):
 
     def get_action(self, state, msg):
         state.convert_to_human_readable_format(self)  # TODO: NAME TBD
+        print_divider()
         return input(msg)

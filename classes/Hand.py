@@ -52,8 +52,8 @@ class Hand:
 
         i = 0
         for card in self.cards:
-            i += 1
             print(str(i) + ":", card)
+            i += 1
 
     def clear(self):
         self.cards = []

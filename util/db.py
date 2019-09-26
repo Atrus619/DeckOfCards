@@ -16,9 +16,8 @@ def insert_exp(cursor, agent_id, run_id, vector, reward, action):
     cursor.execute(
             "INSERT INTO cards.experience \
             (ins_ts, agent_id, run_id, vector, reward, action) \
-            VALUES(now(), " + agent_id + ", " + run_id + ", " + vector + ", " + reward + ", " + action + ");"
+            VALUES (now(), '" + str(agent_id) + "', '" + str(run_id) + "', '" + str(vector) + "', " + str(reward) + ", '" + str(action) + "');"
             )
-
 
 
 def get_exp():
