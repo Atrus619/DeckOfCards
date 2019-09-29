@@ -3,6 +3,9 @@ import util.db as db
 
 def log_state(trick_state, meld_state, card_1, card_2, mt_list, trick_score,
               meld_score, winner, player_1, player_2, run_id):
+    if run_id is None:
+        return
+
     score_1 = trick_score if player_1 == winner else 0
     score_2 = trick_score if player_2 == winner else 0
 

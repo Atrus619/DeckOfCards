@@ -28,6 +28,7 @@ from util.util import init_players
 from pinochle.scripted_bots.RandomBot import RandomBot
 from pinochle.Game import Game
 from util import db
+from pipeline.benchmark import random_bot_test
 
 # Define players
 model_1 = RandomBot()
@@ -64,4 +65,13 @@ for i in range(cfg.num_cycles):
     # Benchmark and stuff
     if i % cfg.benchmark_freq == 0:
         # List of player 1's winrate against player 2 by cycle
-        player_1_winrate.append(1 - sum(winner_list)/len(winner_list))
+        cycle_win_rate = 1 - sum(winner_list)/len(winner_list)
+        player_1_winrate.append(cycle_win_rate)
+
+        print(model_1)
+        print(model_1.player.name)
+        random_win_rate = random_bot_test(model_1)
+
+        #TODO: figure out how to calculate average reward
+        db.insert_win_rate(cfg.run_id, cycle_win_rate, random_win_rate, 0)
+

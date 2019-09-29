@@ -32,5 +32,3 @@ logging.debug("Trump of the round: " + game.trump)
 # logging.debug(state.global_state)
 
 game.play()
-
-test = db.get_exp('42069', '5')

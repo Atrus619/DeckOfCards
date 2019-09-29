@@ -4,8 +4,8 @@ from pinochle.scripted_bots.RandomBot import RandomBot
 
 class Config:
     # Meta-parameters
-    num_cycles = 50
-    episodes_per_cycle = 1000
+    num_cycles = 5
+    episodes_per_cycle = 1
     experience_replay_buffer = 1e7
     epochs_per_cycle = 100
     player_2_update_freq = 10
@@ -28,3 +28,5 @@ class Config:
 
     # Benchmark Parameters
     benchmark_freq = 1
+    random_bot_name = 'xXxPussySlayer69xXx'
+    random_bot_cycles = 5
