@@ -1,5 +1,6 @@
 from classes.Player import Player
-from util.Util import print_divider
+from util.util import print_divider
+
 
 class Human(Player):
     def __init__(self, name):

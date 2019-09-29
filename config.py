@@ -1,3 +1,7 @@
+import logging
+from pinochle.scripted_bots.RandomBot import RandomBot
+
+
 class Config:
     # Meta-parameters
     num_cycles = 50
@@ -6,6 +10,9 @@ class Config:
     epochs_per_cycle = 100
     player_2_update_freq = 10
     epsilon_schedule = None
+    game = 'pinochle'
+    run_id = 'FIRST_TEST'
+    logging_level = logging.INFO
 
     # NN Parameters
     learning_rate = None
@@ -14,3 +21,10 @@ class Config:
     activation_func = None
     optimizer = None
     loss_metric = None
+
+    # Agent Parameters
+    bot_1_name = 'xXxPussySlayer69xXx'
+    bot_2_name = '007'
+
+    # Benchmark Parameters
+    benchmark_freq = 1

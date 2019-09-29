@@ -2,8 +2,7 @@ import numpy as np
 
 
 class RandomBot:
-    def __init__(self, length_action_vector):
-        self.length_action_vector = length_action_vector
+    def __init__(self):
         self.player = None
 
     def predict(self, state):
@@ -17,3 +16,9 @@ class RandomBot:
 
     def assign_player(self, player):
         self.player = player
+
+    def train(self, num_epochs):
+        pass
+
+    def copy(self):
+        return RandomBot()

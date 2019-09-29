@@ -1,4 +1,4 @@
-from util.Util import *
+from util.util import *
 from classes.Card import Card
 from classes.Suits import Suits
 from util.Constants import Constants as cs

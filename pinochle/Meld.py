@@ -1,4 +1,8 @@
 from operator import attrgetter
+import logging
+from config import Config as cfg
+
+logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
 
 class Meld:
@@ -23,11 +27,11 @@ class Meld:
     def show(self):
         self.rearrange_meld()
 
-        print("Current Meld:")
+        logging.debug("Current Meld:")
 
         i = 0
         for mt in self.melded_cards:
-            print(str(i) + ":", str(mt.card) + ", " + mt.combo + ", " + mt.meld_class + ", " + str(mt.score))
+            logging.debug(str(i) + ": " + str(mt.card) + ", " + mt.combo + ", " + mt.meld_class + ", " + str(mt.score))
             i += 1
 
     def clear_meld(self):

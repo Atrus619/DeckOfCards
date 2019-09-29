@@ -6,11 +6,15 @@ from pinochle.Meld import Meld
 from pinochle.Trick import Trick
 from pinochle.MeldTuple import MeldTuple
 from util.Constants import Constants as cs
-from util.Util import print_divider
+from util.util import print_divider
 from copy import deepcopy
 import random
 import numpy as np
 from util.state_logger import log_state
+import logging
+from config import Config as cfg
+
+logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
 
 # pinochle rules: https://www.pagat.com/marriage/pin2hand.html
@@ -72,7 +76,7 @@ class Game:
             card = mt.card
 
         print_divider()
-        print("Player " + player.name + " plays: " + str(card))  # TODO: Fix this later (possible NULL)
+        logging.debug("Player " + player.name + " plays: " + str(card))  # TODO: Fix this later (possible NULL)
         return card
 
     def collect_meld_cards(self, player, state, limit=12):
@@ -100,7 +104,7 @@ class Game:
 
             if first_hand_card:
                 print_divider()
-                print("For meld please select first card from hand.")
+                logging.debug("For meld please select first card from hand.")
 
             if type(player).__name__ == 'Human':
                 user_input = player.get_action(state, msg=player.name + " select card, type 'Y' to exit:")
@@ -117,7 +121,7 @@ class Game:
             if first_hand_card:
                 if source != "H":
                     print_divider()
-                    print("In case of meld, please select first card from hand.")
+                    logging.debug("In case of meld, please select first card from hand.")
                     continue
 
                 first_hand_card = False
@@ -172,14 +176,14 @@ class Game:
 
         # TODO: make all players see all cards played
         print_divider()
-        print("LETS GET READY TO RUMBLE!!!!!!!!!!!!!!!!!!!!!!!")
-        print("Card 1: " + str(card_1))
-        print("Card 2: " + str(card_2))
+        logging.debug("LETS GET READY TO RUMBLE!!!!!!!!!!!!!!!!!!!!!!!")
+        logging.debug("Card 1: " + str(card_1))
+        logging.debug("Card 2: " + str(card_2))
 
         # Determine winner of trick based on collected cards
         result = trick.compare_cards(card_1, card_2)
         print_divider()
-        print("VICTOR : " + str(player_1.name if result == 0 else player_2.name))
+        logging.debug("VICTOR : " + str(player_1.name if result == 0 else player_2.name))
 
         # Separate winner and loser for scoring, melding, and next hand
         copy_of_players = list(self.players)
@@ -196,7 +200,7 @@ class Game:
 
         # Winner can now meld if they so choose
         print_divider()
-        print(winner.name + " select cards for meld:")
+        logging.debug(winner.name + " select cards for meld:")
 
         # Verify that meld is valid. If meld is invalid, force the user to retry.
         meld_state = self.create_state()
@@ -207,7 +211,7 @@ class Game:
                 break
             else:
                 print_divider()
-                print("Invalid combination submitted, please try again.")
+                logging.debug("Invalid combination submitted, please try again.")
 
         # Update scores
         if len(mt_list) == 0:  # No cards melded, so score is 0
@@ -237,5 +241,6 @@ class Game:
         final_scores = [self.scores[player][-1] for player in self.players]
         winner_index = np.argmax(final_scores)
         print_divider()
-        print("Winner:", str(self.players[winner_index]), "Score:", final_scores[winner_index])
-        print("Loser:", str(self.players[1-winner_index]), "Score:", final_scores[1-winner_index])
+        logging.debug("Winner: " + str(self.players[winner_index]) + "\tScore: " + str(final_scores[winner_index]))
+        logging.debug("Loser: " + str(self.players[1-winner_index]) + "\tScore: " + str(final_scores[1-winner_index]))
+        return winner_index

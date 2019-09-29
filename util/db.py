@@ -1,4 +1,5 @@
 import psycopg2 as pg
+import pandas as pd
 
 
 def open_connection():
@@ -20,18 +21,16 @@ def insert_exp(cursor, agent_id, run_id, vector, reward, action):
             )
 
 
-def get_exp():
-    connection = open_connection()
-
-    cursor = connection.cursor()
-
-    cursor.execute("""SELECT * from cards.experience""")
-
-    rows = cursor.fetchall()
-
-    print(rows)
-
-    for row in rows:
-        print("   ", row[0])
-
-    connection.close()
+def get_exp(run_id, buffer):
+    with open_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT vector, reward, action FROM \
+                cards.experience \
+                WHERE run_id = '" + str(run_id) + "' \
+                ORDER BY ins_ts DESC \
+                LIMIT " + str(buffer) + ";"
+            )
+            result = cursor.fetchall()
+    df = pd.DataFrame(result, columns=['vector', 'reward', 'action'])
+    return df

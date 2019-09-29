@@ -1,3 +1,9 @@
+import logging
+from config import Config as cfg
+
+logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
+
+
 class Hand:
     def __init__(self):
         self.cards = []
@@ -48,11 +54,11 @@ class Hand:
         return True
 
     def show(self):
-        print("Current Hand:")
+        logging.debug("Current Hand:")
 
         i = 0
         for card in self.cards:
-            print(str(i) + ":", card)
+            logging.debug(str(i) + ": " + str(card))
             i += 1
 
     def clear(self):

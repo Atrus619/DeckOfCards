@@ -1,8 +1,11 @@
 import numpy as np
 from operator import attrgetter
 from util.Vectors import Vectors as vs
-from util.Util import print_divider
+from util.util import print_divider
+import logging
+from config import Config as cfg
 
+logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 """
 The strategy is to create a global state with all available information.
 Players will only see the portion of the global state that is available to them.
@@ -31,8 +34,8 @@ class State:
 
         current_scores = [self.game.scores[player][-1] for player in self.game.players]
         print_divider()
-        print("Player 1 Score: ", current_scores[0])
-        print("Player 2 Score: ", current_scores[1])
+        logging.debug("Player 1 Score: " + current_scores[0])
+        logging.debug("Player 2 Score: " + current_scores[1])
 
     def get_player_state(self, player):
         """

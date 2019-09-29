@@ -4,6 +4,10 @@ from classes.Card import Card
 from util.Constants import Constants as cs
 import random
 from operator import attrgetter
+import logging
+from config import Config as cfg
+
+logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
 
 class Deck:
@@ -80,7 +84,7 @@ class Deck:
             if i == number:
                 break
             else:
-                print(str(i+1) + ":", card)
+                logging.debug(str(i+1) + ": " + str(card))
 
     def pull_top_cards(self, number_of_cards):
         card_list = []
