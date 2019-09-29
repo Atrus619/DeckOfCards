@@ -8,6 +8,8 @@ class Player:
         """
         """
 
+        # DO NOT HAVE HAVE THE SAME NAME AS ANOTHER PLAYER
+        # UNLESS YOU WANT A REALLY BAD TIME
         self.name = name
 
     def __str__(self):

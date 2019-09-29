@@ -28,5 +28,5 @@ class Config:
 
     # Benchmark Parameters
     benchmark_freq = 1
-    random_bot_name = 'xXxPussySlayer69xXx'
+    random_bot_name = 'RANDOM_BOT_TEST'
     random_bot_cycles = 5
