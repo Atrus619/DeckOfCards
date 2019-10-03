@@ -5,7 +5,7 @@ from pinochle.scripted_bots.RandomBot import RandomBot
 class Config:
     # Meta-parameters
     num_cycles = 5
-    episodes_per_cycle = 1
+    episodes_per_cycle = 10
     experience_replay_buffer = 1e7
     epochs_per_cycle = 100
     player_2_update_freq = 10

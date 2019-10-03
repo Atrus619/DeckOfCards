@@ -1,9 +1,9 @@
 # Loop through number of training cycles
-    # Loop through number of episodes per cycle
+    # Loop through number of episodes per cycle - COMPLETE
         # Set up game
         # Play game
         # Record along the way
-    # Collect relevant experience for training
+    # Collect relevant experience for training - COMPLETE
     # Train DQN or other model
     # Logging/Visualization/Track Progress/Benchmark
 
@@ -17,18 +17,18 @@
     # Try other algorithms!!!
 
 # Things to log/etc.
-    # Average reward
-    # Win rate versus randombot
-    # Win rate versus older version of bot
+    # Average reward - COMPLETE
+    # Win rate versus randombot - COMPLETE
+    # Win rate versus older version of bot - COMPLETE
     # NN weights/histograms/loss
-    # Overall win-rate
+    # Overall win-rate - COMPLETE
 
 from config import Config as cfg
 from util.util import init_players
 from pinochle.scripted_bots.RandomBot import RandomBot
 from pinochle.Game import Game
 from util import db
-from pipeline.benchmark import random_bot_test
+import pipeline.benchmark as benchmark
 from copy import deepcopy
 
 # Define players
@@ -41,12 +41,15 @@ player_list = init_players(model_1=model_1,
                            name_2=cfg.bot_2_name)
 
 player_1_winrate = []
+previous_experience_id = 0
 
 # For each cycle
-for i in range(cfg.num_cycles):
+for i in range(1, cfg.num_cycles + 1):
     winner_list = []
     # For each episode
     for j in range(cfg.episodes_per_cycle):
+        # Get max id
+
         # Initialize game
         game = Game(name=cfg.game, players=player_list, run_id=cfg.run_id)
         # Play game
@@ -65,16 +68,16 @@ for i in range(cfg.num_cycles):
 
     # Benchmark and stuff
     if i % cfg.benchmark_freq == 0:
-        # List of player 1's winrate against player 2 by cycle
+        # List of player 1's win rate against player 2 by cycle
         cycle_win_rate = 1 - sum(winner_list)/len(winner_list)
         player_1_winrate.append(cycle_win_rate)
-
         model_copy = deepcopy(model_1)
-        print(model_copy)
-        print(model_copy.player.name)
 
-        random_win_rate = random_bot_test(model_copy)
+        random_win_rate = benchmark.random_bot_test(model_copy)
 
-        #TODO: figure out how to calculate average reward
-        db.insert_win_rate(cfg.run_id, cycle_win_rate, random_win_rate, 0)
+        # TODO: player 1 is winning non stop, there is some bug in the game, win rate too high
+        # THIS IS TOP PRIORITY TO FIX
+        average_reward = benchmark.get_average_reward(cfg.run_id, previous_experience_id, cfg.bot_1_name)
+        db.insert_metrics(cfg.run_id, cycle_win_rate, random_win_rate, average_reward)
 
+        previous_experience_id = db.get_max_id(cfg.run_id)

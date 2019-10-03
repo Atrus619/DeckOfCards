@@ -23,7 +23,7 @@ def insert_exp(cursor, agent_id, run_id, vector, reward, action):
             )
 
 
-def insert_win_rate(run_id, win_rate, win_rate_random, average_reward):
+def insert_metrics(run_id, win_rate, win_rate_random, average_reward):
     with open_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
@@ -65,3 +65,34 @@ def get_metrics(run_id):
 
     df = pd.DataFrame(result, columns=['win_rate', 'win_rate_random', 'average_reward'])
     return df
+
+
+def get_max_id(run_id):
+    with open_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT max(id)  \
+                FROM cards.experience \
+                WHERE run_id = '" + str(run_id) + "';"
+            )
+            result = cursor.fetchone()
+
+    return result[0]
+
+
+def get_rewards_by_id(run_id, previous_experience_id, agent_id):
+    with open_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT reward  \
+                FROM cards.experience \
+                WHERE run_id = '" + str(run_id) + "' \
+                and id > " + str(previous_experience_id) + " \
+                and agent_id = '" + str(agent_id) + "' ;"
+            )
+            result = cursor.fetchall()
+
+    df = pd.DataFrame(result, columns=['reward'])
+    return df
+
+
