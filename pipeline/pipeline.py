@@ -30,6 +30,7 @@ from pinochle.Game import Game
 from util import db
 import pipeline.benchmark as benchmark
 from copy import deepcopy
+import logging
 
 # Define players
 model_1 = RandomBot()
@@ -75,9 +76,8 @@ for i in range(1, cfg.num_cycles + 1):
 
         random_win_rate = benchmark.random_bot_test(model_copy)
 
-        # TODO: player 1 is winning non stop, there is some bug in the game, win rate too high
-        # THIS IS TOP PRIORITY TO FIX
         average_reward = benchmark.get_average_reward(cfg.run_id, previous_experience_id, cfg.bot_1_name)
+        # TODO: insert next state as well
         db.insert_metrics(cfg.run_id, cycle_win_rate, random_win_rate, average_reward)
 
         previous_experience_id = db.get_max_id(cfg.run_id)
