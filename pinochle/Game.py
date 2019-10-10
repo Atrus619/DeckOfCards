@@ -166,9 +166,14 @@ class Game:
         trick = Trick(self.players, self.trump)
 
         # Determine which player goes first based on priority arg
+        """ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # TRICK PLAYER LIST IS NOT ALWAYS THE SAME AS THE GAME PLAYER LIST
+        # THEY COULD BE IN DIFFERENT ORDER
+        """
         player_order = list(self.players)
         player_1 = player_order.pop(priority)
         player_2 = player_order[0]
+        trick_player_list = [player_1, player_2]
 
         # Collect card for trick from each player based on order
         card_1 = self.collect_trick_cards(player_1, trick_state)
@@ -186,9 +191,8 @@ class Game:
         logging.debug("VICTOR : " + str(player_1.name if result == 0 else player_2.name))
 
         # Separate winner and loser for scoring, melding, and next hand
-        copy_of_players = list(self.players)
-        winner = copy_of_players.pop(result)
-        loser = copy_of_players[0]
+        winner = trick_player_list.pop(result)
+        loser = trick_player_list[0]
 
         # Winner draws a card from the stock, followed by the loser drawing a card from the stock
         # TODO: Come back here and allow winner to choose when down to last 2 cards (optional af)
@@ -232,7 +236,7 @@ class Game:
         for mt in mt_list:
             self.melds[winner].add_melded_card(mt)
 
-        return result
+        return self.players.index(winner)
 
     def play(self):
         priority = random.randint(0, 1)
