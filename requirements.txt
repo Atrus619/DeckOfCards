@@ -13,6 +13,7 @@ matplotlib==3.1.0
 numpy==1.16.4
 pandas==0.24.2
 protobuf==3.8.0
+psycopg2==2.8.3
 pyparsing==2.4.0
 python-dateutil==2.8.0
 pytz==2019.1
@@ -21,4 +22,5 @@ tb-nightly==1.14.0a20190301
 tensorflow==2.0.0a0
 termcolor==1.1.0
 tf-estimator-nightly==1.14.0.dev2019030115
+torch==1.1.0
 Werkzeug==0.15.4
