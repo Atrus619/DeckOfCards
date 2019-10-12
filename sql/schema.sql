@@ -12,6 +12,7 @@ CREATE TABLE cards.experience (
     agent_id varchar NULL,
     run_id varchar NOT NULL,
     vector varchar NOT NULL,
+    next_vector varchar NULL,
     reward numeric NOT NULL,
     action varchar NULL,
     CONSTRAINT experience_pk PRIMARY KEY (id)
