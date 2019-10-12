@@ -4,31 +4,24 @@ from classes.Agent import Agent
 from pinochle.scripted_bots.RandomBot import RandomBot
 from pinochle.State import State
 from util import db
-import logging
-from config import Config as cfg
+from datasets.GameHistory import GameHistory
+from torch.utils import data
+import numpy as np
+import torch
 
-logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
+exp = db.get_exp('TEST_None', 1000)
+my_data = GameHistory(exp, 64, 28, 24)
 
-# player_1 = Human("Romulus")
-bot1 = RandomBot()
-player_1 = Agent(name="xXxPussySlayer69xXx", model=bot1)
-bot2 = RandomBot()
-player_2 = Agent(name="007", model=bot2)
-bot1.assign_player(player_1)
-bot2.assign_player(player_2)
+my_data_gen = data.DataLoader(my_data, batch_size=my_data.bs, shuffle=True, num_workers=4)
 
-player_list = [player_1, player_2]
-game = Game("pinochle", player_list)
+for batch in my_data_gen:
+    print("hello")
 
-logging.debug("In the red corner: " + player_1.name + " (" + type(player_1).__name__ + ")")
-logging.debug("In the blue corner: " + player_2.name + " (" + type(player_2).__name__ + ")")
-game.deal()
-logging.debug("Trump of the round: " + game.trump)
+arr = exp.state.values
+arr2 = arr.split(',')
 
-# state = State(game)
-#
-# state.convert_to_human_readable_format(player_1)
-#
-# logging.debug(state.global_state)
+test = exp.state.str.split(',')
 
-game.play()
+test_list = list(map(float, test))
+
+pls_work = test.apply(lambda x: list(map(float, x)))

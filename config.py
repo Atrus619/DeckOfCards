@@ -1,5 +1,6 @@
 import logging
 from pinochle.scripted_bots.RandomBot import RandomBot
+import numpy as np
 
 
 class Config:
@@ -13,6 +14,8 @@ class Config:
     game = 'pinochle'
     run_id = 'TEST'
     logging_level = logging.INFO
+    state_size = 28
+    num_actions = 24
 
     # NN Parameters
     learning_rate = None
@@ -31,5 +34,6 @@ class Config:
     random_bot_name = 'RANDOM_BOT_TEST'
     random_bot_cycles = 5
 
-    terminal_state = '0'
+    # Needs to match length of state_vector
+    terminal_state = ','.join([str(x) for x in np.zeros(state_size)])
 

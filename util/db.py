@@ -50,7 +50,7 @@ def get_exp(run_id, buffer):
     with open_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
-                "SELECT vector, reward, action FROM \
+                "SELECT vector, action, next_vector, reward FROM \
                 cards.experience \
                 WHERE run_id = '" + str(run_id) + "' \
                 ORDER BY ins_ts DESC \
@@ -58,7 +58,7 @@ def get_exp(run_id, buffer):
             )
             result = cursor.fetchall()
 
-    df = pd.DataFrame(result, columns=['vector', 'reward', 'action'])
+    df = pd.DataFrame(result, columns=['state', 'action', 'next_state', 'reward'])
     return df
 
 

@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch.optim as optim
 from collections import OrderedDict
+from collections import namedtuple
 import torch
 
 
@@ -13,11 +14,13 @@ class DQN(nn.Module):
                  loss_fn=nn.CrossEntropyLoss(), activation_fn=nn.LeakyReLU(0.2), learning_rate=2e-4, beta1=0.5, beta2=0.999, weight_decay=0, device=None):
         # General housekeeping
         super().__init__()
+
         if device is not None:
             self.device = device
         else:
             self.device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
 
+        self.transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
         self.num_layers = num_layers
         self.hidden_units_per_layer = hidden_units_per_layer
 
@@ -50,6 +53,7 @@ class DQN(nn.Module):
             else:
                 return layer(x)  # Softmax not needed because it is built into CrossEntropy loss in pytorch
 
+    # TODO: Pick up here and rework variable names (batch/labels --> states and friends)
     def train_one_batch(self, batch, labels):
         self.zero_grad()
 
@@ -67,10 +71,10 @@ class DQN(nn.Module):
         self.train()
 
         for i in range(num_epochs):
-            for batch, labels in exp_gen:
+            for states, actions, next_states, rewards in exp_gen:
                 if device_mismatch:
-                    batch, labels = batch.to(self.device), labels.to(self.device)
-                self.train_one_batch(batch=batch, labels=labels)
+                    states, actions, next_states, rewards = states.to(self.device), actions.to(self.device), next_states.to(self.device), rewards.to(self.device)
+                self.train_one_batch(states=states, actions=actions, next_states=next_states, rewards=rewards)
 
     def assemble_architecture(self):
         """
