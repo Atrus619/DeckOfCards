@@ -13,13 +13,23 @@ def open_connection():
     return connection
 
 
-
-
 def insert_exp(cursor, agent_id, run_id, vector, reward, action):
     cursor.execute(
             "INSERT INTO cards.experience \
             (ins_ts, agent_id, run_id, vector, reward, action) \
-            VALUES (now(), '" + str(agent_id) + "', '" + str(run_id) + "', '" + str(vector) + "', " + str(reward) + ", '" + str(action) + "');"
+            VALUES (now(), '" + str(agent_id) + "', '" + str(run_id) + "', '" + str(vector) + "', " + str(reward) + ", '" + str(action) + "') \
+            RETURNING id;"
+            )
+
+    result = cursor.fetchone()
+    return result[0]
+
+
+def update_exp(cursor, next_vector, row_id):
+    cursor.execute(
+            "UPDATE cards.experience \
+            SET ins_ts = now(), next_vector =  '" + str(next_vector) + "' \
+            WHERE id = '" + str(row_id) + "';"
             )
 
 
@@ -79,6 +89,17 @@ def get_max_id(run_id):
 
     return result[0]
 
+def get_global_max_id():
+    with open_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT max(id)  \
+                FROM cards.experience;"
+            )
+            result = cursor.fetchone()
+
+    return result[0]
+
 
 def get_rewards_by_id(run_id, previous_experience_id, agent_id):
     with open_connection() as conn:
@@ -94,5 +115,4 @@ def get_rewards_by_id(run_id, previous_experience_id, agent_id):
 
     df = pd.DataFrame(result, columns=['reward'])
     return df
-
 

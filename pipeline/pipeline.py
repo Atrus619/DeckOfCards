@@ -30,7 +30,7 @@ from pinochle.Game import Game
 from util import db
 import pipeline.benchmark as benchmark
 from copy import deepcopy
-import logging
+from util.util import generate_run_id
 
 # Define players
 model_1 = RandomBot()
@@ -43,6 +43,8 @@ player_list = init_players(model_1=model_1,
 
 player_1_winrate = []
 previous_experience_id = 0
+
+cfg.run_id = generate_run_id()
 
 # For each cycle
 for i in range(1, cfg.num_cycles + 1):

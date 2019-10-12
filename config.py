@@ -11,7 +11,7 @@ class Config:
     player_2_update_freq = 10
     epsilon_schedule = None
     game = 'pinochle'
-    run_id = 'FIRST_TEST'
+    run_id = 'TEST'
     logging_level = logging.INFO
 
     # NN Parameters
@@ -30,3 +30,6 @@ class Config:
     benchmark_freq = 1
     random_bot_name = 'RANDOM_BOT_TEST'
     random_bot_cycles = 5
+
+    terminal_state = '0'
+

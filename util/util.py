@@ -1,6 +1,7 @@
 from classes.Agent import Agent
 import logging
 from config import Config as cfg
+import util.db as db
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
@@ -29,3 +30,10 @@ def init_players(model_1, name_1, model_2, name_2):
     model_1.assign_player(player_1)
     model_2.assign_player(player_2)
     return [player_1, player_2]
+
+
+def generate_run_id():
+    if cfg.run_id == 'TEST':
+        return cfg.run_id + '_' + str(db.get_global_max_id())
+    else:
+        return cfg.run_id

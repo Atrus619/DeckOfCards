@@ -10,7 +10,7 @@ from util.util import print_divider
 from copy import deepcopy
 import random
 import numpy as np
-from util.state_logger import log_state
+import util.state_logger as sl
 import logging
 from config import Config as cfg
 
@@ -38,6 +38,8 @@ class Game:
         self.melds = {}
         self.scores = {}
         self.meldedCards = {}
+
+        self.player_experience_ids = {}
 
         for player in self.players:
             self.hands[player] = Hand()
@@ -162,6 +164,9 @@ class Game:
         :return: index of winner (priority for next trick)
         """
         trick_state = self.create_state()
+        if self.players[0] in self.player_experience_ids and self.run_id is not None:
+            sl.update_state(trick_state, self.players[0], self.players[1],
+                            self.player_experience_ids[self.players[0]], self.player_experience_ids[self.players[1]])
 
         trick = Trick(self.players, self.trump)
 
@@ -226,8 +231,16 @@ class Game:
         total_score = meld_score + trick_score
 
         # log states and actions
-        log_state(trick_state, meld_state, card_1, card_2,
-                  mt_list, trick_score, meld_score, winner, self.players[0], self.players[1], self.run_id)
+        # row_id_1 always corresponds to the experience row for player 0 in game (NOT TRICK)
+        # same for row_id_2
+        if self.run_id is not None:
+            row_id_1, row_id_2 = sl.log_state(trick_state, meld_state, card_1, card_2,
+                                              mt_list, trick_score, meld_score, winner, self.players[0],
+                                              self.players[1],
+                                              self.run_id)
+
+            self.player_experience_ids[self.players[0]] = row_id_1
+            self.player_experience_ids[self.players[1]] = row_id_2
 
         self.scores[winner].append(self.scores[winner][-1] + total_score)
         self.scores[loser].append(self.scores[loser][-1])
@@ -242,9 +255,15 @@ class Game:
         priority = random.randint(0, 1)
         while len(self.deck) > 0:
             priority = self.play_trick(priority)
+
+        if self.run_id is not None:
+            sl.set_terminal_state(self.player_experience_ids[self.players[0]],
+                                  self.player_experience_ids[self.players[1]])
+
         final_scores = [self.scores[player][-1] for player in self.players]
         winner_index = np.argmax(final_scores)
         print_divider()
         logging.debug("Winner: " + str(self.players[winner_index]) + "\tScore: " + str(final_scores[winner_index]))
-        logging.debug("Loser: " + str(self.players[1-winner_index]) + "\tScore: " + str(final_scores[1-winner_index]))
+        logging.debug(
+            "Loser: " + str(self.players[1 - winner_index]) + "\tScore: " + str(final_scores[1 - winner_index]))
         return winner_index
