@@ -16,21 +16,18 @@ class GameHistory(data.Dataset):
         self.state_size = state_size
         self.num_actions = num_actions
 
-        self.states = self.preprocess_series(self.df.state)
-        self.actions = self.preprocess_series(self.df.action)
-        self.next_states = self.preprocess_series(self.df.next_state)
+        self.states = self.preprocess_series(series=self.df.state, dtype=torch.float32)
+        self.actions = self.preprocess_series(series=self.df.action, dtype=torch.int64)
+        self.next_states = self.preprocess_series(series=self.df.next_state, dtype=torch.float32)
         self.rewards = torch.tensor(self.df.reward.astype(float), device=self.device)
 
-    # TODO: I don't think we are gonna use dis
-    def preprocess_data_MAYBE_USE_THIS_LATA(self, data):
-        return self.transition(*zip(*data))
-
     def __len__(self):
-        return len(self.df) // self.bs + 1
+        return len(self.df)
 
     def __getitem__(self, index):
         return self.states[index], self.actions[index], self.next_states[index], self.rewards[index]
 
-    def preprocess_series(self, series):
+    def preprocess_series(self, series, dtype):
+        # dtype should be a torch dtype
         series = series.str.split(',').apply(lambda x: list(map(float, x)))
-        return torch.tensor(series, device=self.device)
+        return torch.tensor(series, device=self.device, dtype=dtype)

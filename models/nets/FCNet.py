@@ -1,37 +1,27 @@
 import torch.nn as nn
 import torch.optim as optim
 from collections import OrderedDict
-from collections import namedtuple
 import torch
 
 
-class DQN(nn.Module):
+class FCNet(nn.Module):
     """
-    Deep Q Learning Network (DQN)
+    Simple Fully-Connected Network (FCN) for Deep Q Learning Network (DQN)
     """
 
     def __init__(self, num_layers, hidden_units_per_layer, state_size, num_actions,
-                 loss_fn=nn.CrossEntropyLoss(), activation_fn=nn.LeakyReLU(0.2), learning_rate=2e-4, beta1=0.5, beta2=0.999, weight_decay=0, device=None):
+                 loss_fn, activation_fn, learning_rate, beta1, beta2, weight_decay, device):
         # General housekeeping
         super().__init__()
-
-        if device is not None:
-            self.device = device
-        else:
-            self.device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
-
-        self.transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
-        self.num_layers = num_layers
-        self.hidden_units_per_layer = hidden_units_per_layer
+        self.device = device
 
         # RL parameters
         self.state_size = state_size
         self.num_actions = num_actions
 
-        # History
-        self.loss = []
-
         # Layers
+        self.num_layers = num_layers
+        self.hidden_units_per_layer = hidden_units_per_layer
         self.architecture = OrderedDict()
         self.assemble_architecture()
         self.assemble_modules()
@@ -44,37 +34,14 @@ class DQN(nn.Module):
         # Initialize weights
         self.weights_init()
 
-    def forward(self, batch):
+    def forward(self, states):
         for i, (name, layer) in enumerate(self.architecture.items()):
             if i == 0:
-                x = self.act_fn(layer(batch))
+                x = self.act_fn(layer(states))
             elif i < (len(self.architecture) - 1):
                 x = self.act_fn(layer(x))
             else:
-                return layer(x)  # Softmax not needed because it is built into CrossEntropy loss in pytorch
-
-    # TODO: Pick up here and rework variable names (batch/labels --> states and friends)
-    def train_one_batch(self, batch, labels):
-        self.zero_grad()
-
-        output = self.forward(batch=batch)
-        loss = self.loss_fn(output, labels)
-
-        loss.backward()
-        self.opt.step()
-
-        self.loss.append(loss.item())
-
-    def train_dqn(self, num_epochs, exp_gen):
-        device_mismatch = self.device != exp_gen.device
-
-        self.train()
-
-        for i in range(num_epochs):
-            for states, actions, next_states, rewards in exp_gen:
-                if device_mismatch:
-                    states, actions, next_states, rewards = states.to(self.device), actions.to(self.device), next_states.to(self.device), rewards.to(self.device)
-                self.train_one_batch(states=states, actions=actions, next_states=next_states, rewards=rewards)
+                return layer(x)  # No activation - Softmax not needed because it is built into CrossEntropy loss in pytorch
 
     def assemble_architecture(self):
         """
