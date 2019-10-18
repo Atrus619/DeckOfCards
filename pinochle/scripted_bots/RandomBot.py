@@ -17,7 +17,7 @@ class RandomBot:
     def assign_player(self, player):
         self.player = player
 
-    def train(self, num_epochs):
+    def train_self(self, num_epochs):
         pass
 
     def copy(self):

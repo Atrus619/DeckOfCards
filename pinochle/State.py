@@ -4,6 +4,7 @@ from util.Vectors import Vectors as vs
 from util.util import print_divider
 import logging
 from config import Config as cfg
+import torch
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 """
@@ -49,6 +50,11 @@ class State:
         global_info = self.global_state[2 * len(self.one_hot_template):]
 
         return np.concatenate((player_hand, global_info), axis=0)
+
+    def get_player_state_as_tensor(self, player, device=None):
+        arr = self.get_player_state(player)
+        device = cfg.DQN_params['device'] if device is None else device
+        return torch.from_numpy(arr).type(torch.float32).to(device)
 
     # TODO: move these mf build vectors to their respective classes so we don't have this mess here
     def build_hand_vector(self, hand):

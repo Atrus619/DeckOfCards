@@ -19,7 +19,7 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
 # pinochle rules: https://www.pagat.com/marriage/pin2hand.html
 class Game:
-    def __init__(self, name, players, run_id="42069"):
+    def __init__(self, name, players, run_id="42069", current_cycle=None):
         self.run_id = run_id
         self.name = name.upper()
         self.players = players  # This is a list
@@ -28,6 +28,7 @@ class Game:
         self.trump_card = None
         self.trump = None
         self.meld_util = None
+        self.current_cycle = current_cycle  # To determine the current value of epsilon
 
         if self.name == cs.PINOCHLE:
             self.deck = Deck("pinochle")
@@ -65,7 +66,8 @@ class Game:
         if type(player).__name__ == 'Human':
             user_input = player.get_action(state, msg=player.name + " select card for trick:")
         else:  # Bot
-            action = player.get_action(state)
+            # TODO: Add valid moves mask to player.get_action and neural network output
+            action = player.get_action(state, current_cycle=self.current_cycle, valid_moves=None)
             user_input = player.convert_model_output(output_index=action, game=self, hand=True)
         source = user_input[0]
         index = int(user_input[1:])
@@ -111,11 +113,13 @@ class Game:
             if type(player).__name__ == 'Human':
                 user_input = player.get_action(state, msg=player.name + " select card, type 'Y' to exit:")
             else:  # Bot
-                action = player.get_action(state)
+                action = player.get_action(state, current_cycle=self.current_cycle)
                 user_input = player.convert_model_output(output_index=action, game=self, hand=False)
 
             if user_input == 'Y':
                 break
+
+            # TODO: Return here and do something similar to what was done for collect_trick_cards (punishing illegal moves)
 
             source = user_input[0]
             index = int(user_input[1:])

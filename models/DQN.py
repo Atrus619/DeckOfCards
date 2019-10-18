@@ -9,7 +9,6 @@ class DQN:
     """
     Deep Q Learning Network (DQN)
     """
-
     def __init__(self, update_target_net_freq, gamma, grad_clamp, terminal_state_tensor,
                  num_layers, hidden_units_per_layer, state_size, num_actions,
                  loss_fn=F.smooth_l1_loss, activation_fn=nn.LeakyReLU(0.2), learning_rate=2e-4, beta1=0.5, beta2=0.999, weight_decay=0, device=None):
@@ -19,6 +18,7 @@ class DQN:
         self.gamma = gamma
         self.grad_clamp = grad_clamp
         self.terminal_state_tensor = terminal_state_tensor.to(self.device)
+        self.player = None
 
         # Instantiate neural nets
         self.policy_net = FCNet(num_layers=num_layers, hidden_units_per_layer=hidden_units_per_layer, state_size=state_size, num_actions=num_actions, loss_fn=loss_fn,
@@ -52,7 +52,7 @@ class DQN:
         # Save History
         self.loss.append(loss.item())
 
-    def train_dqn(self, num_epochs, exp_gen):
+    def train_self(self, num_epochs, exp_gen):
         device_mismatch = self.device != exp_gen.device
 
         self.policy_net.train()
@@ -70,3 +70,11 @@ class DQN:
     def update_target_net(self):
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
+
+    def copy(self):
+        return deepcopy(self)
+
+    def assign_player(self, player):
+        self.player = player
+
+    # TODO: Add history of norms of gradients and weights

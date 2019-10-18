@@ -3,7 +3,7 @@ from torch.utils import data
 
 
 class GameHistory(data.Dataset):
-    def __init__(self, df, bs, state_size, num_actions, device=None):
+    def __init__(self, df, batch_size, state_size, num_actions, device=None):
         assert all(df.columns == ['state', 'action', 'next_state', 'reward']), 'Data not in expected format.'
 
         if device is not None:
@@ -11,7 +11,7 @@ class GameHistory(data.Dataset):
         else:
             self.device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
 
-        self.bs = bs
+        self.batch_size = batch_size
         self.df = df
         self.state_size = state_size
         self.num_actions = num_actions

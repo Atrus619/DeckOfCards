@@ -1,10 +1,8 @@
 from config import Config as cfg
-from util.util import init_players
 from pinochle.scripted_bots.RandomBot import RandomBot
 from pinochle.Game import Game
 from util import db
 from classes.Agent import Agent
-import pandas as pd
 import logging
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)

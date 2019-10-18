@@ -8,7 +8,6 @@ class FCNet(nn.Module):
     """
     Simple Fully-Connected Network (FCN) for Deep Q Learning Network (DQN)
     """
-
     def __init__(self, num_layers, hidden_units_per_layer, state_size, num_actions,
                  loss_fn, activation_fn, learning_rate, beta1, beta2, weight_decay, device):
         # General housekeeping
@@ -41,7 +40,7 @@ class FCNet(nn.Module):
             elif i < (len(self.architecture) - 1):
                 x = self.act_fn(layer(x))
             else:
-                return layer(x)  # No activation - Softmax not needed because it is built into CrossEntropy loss in pytorch
+                return layer(x)  # No activation
 
     def assemble_architecture(self):
         """
