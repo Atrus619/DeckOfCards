@@ -20,6 +20,11 @@ class Config:
     state_size = 28
     num_actions = 24
 
+    # Benchmark Parameters
+    benchmark_freq = 5
+    random_bot_name = 'RANDOM_BOT_TEST'
+    random_bot_cycles = 30
+
     # NN Parameters
     DQN_params = {
         'update_target_net_freq': 10,  # In epochs
@@ -44,11 +49,6 @@ class Config:
     # Agent Parameters
     bot_1_name = 'xXxPussySlayer69xXx'
     bot_2_name = '007'
-
-    # Benchmark Parameters
-    benchmark_freq = 5
-    random_bot_name = 'RANDOM_BOT_TEST'
-    random_bot_cycles = 30
 
     # Needs to match length of state_vector
     terminal_state = ','.join([str(x) for x in np.zeros(state_size)])

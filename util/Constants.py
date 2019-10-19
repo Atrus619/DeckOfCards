@@ -45,3 +45,6 @@ class Constants:
         STANDARD,
         PINOCHLE
     }
+
+    # Print divider
+    DIVIDER = '---------------------------------------------------------------------------------'

@@ -89,6 +89,7 @@ def get_max_id(run_id):
 
     return result[0]
 
+
 def get_global_max_id():
     with open_connection() as conn:
         with conn.cursor() as cursor:
@@ -115,4 +116,3 @@ def get_rewards_by_id(run_id, previous_experience_id, agent_id):
 
     df = pd.DataFrame(result, columns=['reward'])
     return df
-

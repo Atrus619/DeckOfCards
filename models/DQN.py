@@ -3,6 +3,8 @@ import torch.nn.functional as F
 import torch
 from models.nets.FCNet import FCNet
 from copy import deepcopy
+import pickle as pkl
+import os
 
 
 class DQN:
@@ -34,7 +36,7 @@ class DQN:
         initial_action_tensor = self.policy_net(state.get_player_state_as_tensor(player=player))
         best_valid_action_prob = initial_action_tensor[valid_action_mask.nonzero()].max()
 
-        return (initial_action_tensor == best_valid_action_prob).nonzero().item()
+        return (initial_action_tensor == best_valid_action_prob).nonzero()[0].item()
 
     def train_one_batch(self, states, actions, next_states, rewards):
         action_indices = actions.argmax(dim=1).unsqueeze(1)
@@ -84,5 +86,11 @@ class DQN:
 
     def assign_player(self, player):
         self.player = player
+
+    def save(self, title=None):
+        title = 'latest' if title is None else title
+        os.makedirs('saved_models', exist_ok=True)
+        with open(os.path.join('saved_models', title + '.pkl'), 'wb') as f:
+            pkl.dump(self, f)
 
     # TODO: Add history of norms of gradients and weights
