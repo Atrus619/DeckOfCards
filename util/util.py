@@ -3,6 +3,8 @@ import logging
 from config import Config as cfg
 import util.db as db
 from util.Constants import Constants as cs
+import pickle as pkl
+import os
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
@@ -77,7 +79,7 @@ def get_random_bot_epsilon(current_cycle):
 
 
 def get_eval_epsilon(current_cycle):
-    return cfg.min_epsilon
+    return 0
 
 
 def get_pretty_time(duration, num_digits=2):
@@ -88,3 +90,17 @@ def get_pretty_time(duration, num_digits=2):
         return str(round(duration / 60, num_digits)) + 'm'
     else:
         return str(round(duration, num_digits)) + 's'
+
+
+def save_config(config, path=None):
+    path = 'latest' if path is None else path
+    os.makedirs('saved_configs', exist_ok=True)
+    with open(os.path.join('saved_configs', path + '.pkl'), 'wb') as f:
+        pkl.dump(config, f)
+
+
+def get_config(path=None):
+    path = 'latest' if path is None else path
+    with open(os.path.join('saved_configs', path + '.pkl'), 'rb') as f:
+        config = pkl.load(f)
+    return config

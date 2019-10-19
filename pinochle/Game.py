@@ -66,9 +66,10 @@ class Game:
         if type(player).__name__ == 'Human':
             user_input = player.get_action(state, msg=player.name + " select card for trick:")
         else:  # Bot
-            # TODO: Add valid moves mask to player.get_action and neural network output
             action = player.get_action(state, current_cycle=self.current_cycle, is_hand=True)
             user_input = player.convert_model_output(output_index=action, game=self, is_hand=True)
+        if user_input is None:
+            import pdb; pdb.set_trace()
         source = user_input[0]
         index = int(user_input[1:])
 

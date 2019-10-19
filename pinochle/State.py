@@ -65,7 +65,7 @@ class State:
         :return: Boolean Tensor
         """
         if is_hand:
-            return self.get_player_state_as_tensor(player)[0:cfg.num_actions] > 0
+            return self.get_player_state_as_tensor(player)[:cfg.num_actions] > 0
         else:  # Meld
             raise NotImplementedError
 

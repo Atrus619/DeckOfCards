@@ -33,7 +33,13 @@ class DQN:
     def get_legal_action(self, state, player, is_hand):
         # Picks the highest output legal action, ignoring illegal actions
         valid_action_mask = state.get_valid_action_mask(player=player, is_hand=is_hand)
+        invalid_action_mask = (valid_action_mask == 0).nonzero()
         initial_action_tensor = self.policy_net(state.get_player_state_as_tensor(player=player))
+
+        # Setting to large negative number to deal with ties.
+        # If an invalid option and a valid option had the same value, it could choose the invalid option, leading to a downstream error.
+        initial_action_tensor[invalid_action_mask] = -999
+
         best_valid_action_prob = initial_action_tensor[valid_action_mask.nonzero()].max()
 
         return (initial_action_tensor == best_valid_action_prob).nonzero()[0].item()
