@@ -67,8 +67,8 @@ class Game:
             user_input = player.get_action(state, msg=player.name + " select card for trick:")
         else:  # Bot
             # TODO: Add valid moves mask to player.get_action and neural network output
-            action = player.get_action(state, current_cycle=self.current_cycle, valid_moves=None)
-            user_input = player.convert_model_output(output_index=action, game=self, hand=True)
+            action = player.get_action(state, current_cycle=self.current_cycle, is_hand=True)
+            user_input = player.convert_model_output(output_index=action, game=self, is_hand=True)
         source = user_input[0]
         index = int(user_input[1:])
 
@@ -113,8 +113,8 @@ class Game:
             if type(player).__name__ == 'Human':
                 user_input = player.get_action(state, msg=player.name + " select card, type 'Y' to exit:")
             else:  # Bot
-                action = player.get_action(state, current_cycle=self.current_cycle)
-                user_input = player.convert_model_output(output_index=action, game=self, hand=False)
+                action = player.get_action(state, current_cycle=self.current_cycle, is_hand=False)
+                user_input = player.convert_model_output(output_index=action, game=self, is_hand=False)
 
             if user_input == 'Y':
                 break

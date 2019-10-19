@@ -19,7 +19,6 @@ class Config:
     epsilon_func = 'get_epsilon_linear_anneal'
     state_size = 28
     num_actions = 24
-    illegal_move_punishment = -6.9
 
     # NN Parameters
     DQN_params = {

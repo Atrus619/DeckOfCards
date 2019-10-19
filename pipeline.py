@@ -30,6 +30,7 @@ from models.DQN import DQN
 from pinochle.Game import Game
 from util import db
 from pipeline import benchmark
+from torch.utils.data import DataLoader
 
 # Define players
 model_1 = DQN(**cfg.DQN_params)
@@ -46,6 +47,8 @@ previous_experience_id = 0
 
 cfg.run_id = generate_run_id()
 
+# TODO: Add logging.info stuff throughout so we can monitor progress
+
 # For each cycle
 for i in range(1, cfg.num_cycles + 1):
     winner_list = []
@@ -59,9 +62,9 @@ for i in range(1, cfg.num_cycles + 1):
         winner_list.append(game.play())
 
     # Import data from database based on experience replay buffer
-    data = db.get_exp(run_id=cfg.run_id, buffer=cfg.experience_replay_buffer)
-    gh = GameHistory(df=data, **cfg.GH_params)
-    gh_gen = data.DataLoader(gh, batch_size=gh.batch_size, shuffle=True, num_workers=cfg.num_workers)
+    df = db.get_exp(run_id=cfg.run_id, buffer=cfg.experience_replay_buffer)
+    gh = GameHistory(df=df, **cfg.GH_params)
+    gh_gen = DataLoader(dataset=gh, batch_size=gh.batch_size, shuffle=True, num_workers=cfg.num_workers)
 
     # Train model
     model_1.train_self(num_epochs=cfg.epochs_per_cycle, exp_gen=gh_gen)

@@ -5,7 +5,7 @@ class RandomBot:
     def __init__(self):
         self.player = None
 
-    def predict(self, state):
+    def get_legal_action(self, state):
         """
         RandomBot just does random actions. Returns a random viable card based on the player's state
         :param state: N/A

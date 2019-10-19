@@ -23,7 +23,7 @@ class State:
         player1_hand_vector = self.build_hand_vector(self.game.hands[self.game.players[0]])
         player2_hand_vector = self.build_hand_vector(self.game.hands[self.game.players[1]])
         trump_vector = self.build_trump_vector()
-        # import pdb; pdb.set_trace()
+
         self.global_state = np.concatenate((player1_hand_vector, player2_hand_vector, trump_vector), axis=0)
 
     def convert_to_human_readable_format(self, player):
@@ -55,6 +55,19 @@ class State:
         arr = self.get_player_state(player)
         device = cfg.DQN_params['device'] if device is None else device
         return torch.from_numpy(arr).type(torch.float32).to(device)
+
+    def get_valid_action_mask(self, player, is_hand):
+        """
+        Returns a boolean tensor mask that only allows valid action indices
+        Assumes first num_action indices are the player's hand
+        :param player: Player of interest
+        :param is_hand: Whether this is a hand or meld action (boolean, True if hand, False if meld)
+        :return: Boolean Tensor
+        """
+        if is_hand:
+            return self.get_player_state_as_tensor(player)[0:cfg.num_actions] > 0
+        else:  # Meld
+            raise NotImplementedError
 
     # TODO: move these mf build vectors to their respective classes so we don't have this mess here
     def build_hand_vector(self, hand):

@@ -28,6 +28,14 @@ class DQN:
         # History
         self.loss = []
 
+    def get_legal_action(self, state, player, is_hand):
+        # Picks the highest output legal action, ignoring illegal actions
+        valid_action_mask = state.get_valid_action_mask(player=player, is_hand=is_hand)
+        initial_action_tensor = self.policy_net(state.get_player_state_as_tensor(player=player))
+        best_valid_action_prob = initial_action_tensor[valid_action_mask.nonzero()].max()
+
+        return (initial_action_tensor == best_valid_action_prob).nonzero().item()
+
     def train_one_batch(self, states, actions, next_states, rewards):
         action_indices = actions.argmax(dim=1).unsqueeze(1)
         pred_Q = self.policy_net(states=states).gather(1, action_indices)  # Compute Q(s_t)
@@ -53,7 +61,7 @@ class DQN:
         self.loss.append(loss.item())
 
     def train_self(self, num_epochs, exp_gen):
-        device_mismatch = self.device != exp_gen.device
+        device_mismatch = self.device != exp_gen.dataset.device
 
         self.policy_net.train()
 
