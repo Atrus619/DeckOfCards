@@ -7,7 +7,7 @@ class Config:
     # Meta-parameters
     num_cycles = 100
     episodes_per_cycle = 50
-    experience_replay_buffer = 1e7
+    experience_replay_buffer = 1e6
     epochs_per_cycle = 100
     player_2_update_freq = 10
     game = 'pinochle'

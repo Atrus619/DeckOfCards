@@ -24,7 +24,7 @@
 # Overall win-rate - COMPLETE
 
 from config import Config as cfg
-from util.util import init_players, get_epsilon_constant_decrement, get_epsilon_linear_anneal, generate_run_id, get_pretty_time
+from util.util import init_players, get_epsilon_constant_decrement, get_epsilon_linear_anneal, generate_run_id, get_pretty_time, save_config
 from datasets.GameHistory import GameHistory
 from models.DQN import DQN
 from pinochle.Game import Game
@@ -52,7 +52,8 @@ if __name__ == '__main__':
     player_1_winrate = []
     previous_experience_id = 0
 
-    cfg.run_id = generate_run_id()
+cfg.run_id = generate_run_id()
+save_config(config=cfg, path=cfg.run_id)
 
     # For each cycle
     logging.info('Beginning run titled: ' + cfg.run_id)
@@ -85,17 +86,21 @@ if __name__ == '__main__':
 
         logging.info('Model training complete.\tTotal Training Time: ' + get_pretty_time(time.time() - training_start_time))
 
-        # Update model_2
-        if i % cfg.player_2_update_freq == 0:
-            logging.info('Setting model 2 equal to model 1...')
-            model_2 = model_1.copy()
+    # Update model_2
+    if i % cfg.player_2_update_freq == 0:
+        logging.info(cs.DIVIDER)
+        logging.info('Setting model 2 equal to model 1...')
+        logging.info(cs.DIVIDER)
+        model_2 = model_1.copy()
 
-        # Benchmark
-        if i % cfg.benchmark_freq == 0:
-            logging.info('Benchmarking...')
-            # List of player 1's win rate against player 2 by cycle
-            cycle_win_rate = 1 - sum(winner_list) / len(winner_list)
-            player_1_winrate.append(cycle_win_rate)
+    # Benchmark
+    if i % cfg.benchmark_freq == 0:
+        logging.info(cs.DIVIDER)
+        logging.info('Benchmarking...')
+
+        # List of player 1's win rate against player 2 by cycle
+        cycle_win_rate = 1 - sum(winner_list) / len(winner_list)
+        player_1_winrate.append(cycle_win_rate)
 
             # Play against random bot and measure win rate
             model_copy = model_1.copy()
@@ -105,7 +110,8 @@ if __name__ == '__main__':
             average_reward = benchmark.get_average_reward(cfg.run_id, previous_experience_id, cfg.bot_1_name)
             db.insert_metrics(cfg.run_id, cycle_win_rate, random_win_rate, average_reward)
 
-            previous_experience_id = db.get_max_id(cfg.run_id)
+        previous_experience_id = db.get_max_id(cfg.run_id)
+        logging.info(cs.DIVIDER)
 
         logging.info('Cycle ' + str(i) + ' / ' + str(cfg.num_cycles) + ' complete.\tTotal Cycle Time: ' + get_pretty_time(time.time() - cycle_start_time))
         logging.info(cs.DIVIDER)
