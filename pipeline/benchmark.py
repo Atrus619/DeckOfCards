@@ -4,7 +4,7 @@ from pinochle.Game import Game
 from util import db
 from classes.Agent import Agent
 import logging
-import util.util as uu
+import util.util as util
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
@@ -12,7 +12,7 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 def random_bot_test(model):
     winner_list = []
     random_bot = RandomBot()
-    player_2 = Agent(name=cfg.random_bot_name, model=random_bot, epsilon_func=uu.get_random_bot_epsilon)
+    player_2 = Agent(name=cfg.random_bot_name, model=random_bot, epsilon_func=util.get_random_bot_epsilon)
     random_bot.assign_player(player_2)
     model.policy_net.eval()
 

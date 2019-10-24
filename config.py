@@ -13,10 +13,15 @@ class Config:
     game = 'pinochle'
     run_id = 'TEST'
     logging_level = logging.INFO
+
+    # Epsilon
+    epsilon_func = 'get_epsilon_linear_anneal'
     max_epsilon = 1.0
     min_epsilon = 0.05
+    eval_epsilon = 0.0
     epsilon_decrement = 0.01  # for get_epsilon_constant_decrement func
-    epsilon_func = 'get_epsilon_linear_anneal'
+
+    # State-Action
     state_size = 76
     num_actions = 24
 

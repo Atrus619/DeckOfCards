@@ -48,7 +48,7 @@ def get_epsilon_linear_anneal(current_cycle):
     :param current_cycle: Current cycle of training
     """
     if current_cycle is None:
-        return cfg.min_epsilon
+        return cfg.eval_epsilon
 
     max_epsilon = cfg.max_epsilon
     min_epsilon = cfg.min_epsilon
@@ -65,7 +65,7 @@ def get_epsilon_constant_decrement(current_cycle, decrement=None):
     :param decrement: Amount to decrease epsilon by per cycle
     """
     if current_cycle is None:
-        return cfg.min_epsilon
+        return cfg.eval_epsilon
 
     max_epsilon = cfg.max_epsilon
     min_epsilon = cfg.min_epsilon
@@ -76,10 +76,6 @@ def get_epsilon_constant_decrement(current_cycle, decrement=None):
 
 def get_random_bot_epsilon(current_cycle):
     return 1
-
-
-def get_eval_epsilon(current_cycle):
-    return 0
 
 
 def get_pretty_time(duration, num_digits=2):
