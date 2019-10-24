@@ -1,10 +1,10 @@
 import numpy as np
-from operator import attrgetter
 from util.Vectors import Vectors as vs
 from util.util import print_divider
 import logging
 from config import Config as cfg
 import torch
+import util.vector_builder as vb
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 """
@@ -16,15 +16,21 @@ a single player's hand, values of 0-2. Next 24 values to the second player's han
 
 
 class State:
-    def __init__(self, game):
+    def __init__(self, game, played_card):
         self.game = game
         self.one_hot_template = vs.PINOCHLE_ONE_HOT_VECTOR
 
-        player1_hand_vector = self.build_hand_vector(self.game.hands[self.game.players[0]])
-        player2_hand_vector = self.build_hand_vector(self.game.hands[self.game.players[1]])
-        trump_vector = self.build_trump_vector()
+        player1_hand_vector = vb.build_hand_vector(self.game.hands[self.game.players[0]])
+        player2_hand_vector = vb.build_hand_vector(self.game.hands[self.game.players[1]])
+        discard_vector = vb.build_hand_vector(self.game.discard_pile)
+        trump_vector = vb.build_trump_vector(self.game.trump)
+        played_card_vector = vb.build_card_vector(played_card)
 
-        self.global_state = np.concatenate((player1_hand_vector, player2_hand_vector, trump_vector), axis=0)
+        """
+        ALWAYS HAVE PLAYER 1 AND PLAYER 2 HAND AT THE BEGINNING OF THE STATE
+        BAD SHIT OTHERWISE
+        """
+        self.global_state = np.concatenate((player1_hand_vector, player2_hand_vector, trump_vector, discard_vector, played_card_vector), axis=0)
 
     def convert_to_human_readable_format(self, player):
         print_divider()
@@ -68,69 +74,3 @@ class State:
             return self.get_player_state_as_tensor(player)[0:cfg.num_actions] > 0
         else:  # Meld
             raise NotImplementedError
-
-    # TODO: move these mf build vectors to their respective classes so we don't have this mess here
-    def build_hand_vector(self, hand):
-        """
-        Produce a one hot vector based on the deck template for a player's hand
-        :param hand: List of cards
-        :return: NumPy Array
-        """
-
-        hand = sorted(hand, key=attrgetter('suit', 'numeric_value'))
-        output = np.zeros(len(self.one_hot_template))
-        last_index = 0
-        for hand_index, hand_card in enumerate(hand):
-            if hand_index == 0 or hand_card != hand[hand_index - 1]:
-                for template_index, template_card in enumerate(self.one_hot_template):
-                    if hand_card == template_card:
-                        last_index = template_index
-                        output[last_index] = 1
-                        break
-            else:
-                output[last_index] = 2
-
-        return output
-
-    # TODO: move these mf build vectors to their respective classes so we don't have this mess here
-    def build_trump_vector(self):
-        """
-        Produce one hot vector based on the trump card in the current game
-        :return:
-        """
-        suit_template = sorted(set([card.suit for card in self.one_hot_template]))  # TODO: Extremely overkill, might want to hardcode for performance gainz
-        output = np.zeros(len(suit_template))
-
-        for index, suit in enumerate(suit_template):
-            if suit == self.game.trump:
-                output[index] = 1
-                return output
-
-    # TODO: move these mf build vectors to their respective classes so we don't have this mess here
-    def build_card_vector(self, card):
-        """
-        Produce a one hot vector based on the deck template for a card
-        :param card: card
-        :return: NumPy Array
-        """
-
-        output = np.zeros(len(self.one_hot_template))
-        for template_index, template_card in enumerate(self.one_hot_template):
-            if card == template_card:
-                last_index = template_index
-                output[last_index] = 1
-                return output
-
-    # TODO: move these mf build vectors to their respective classes so we don't have this mess here
-    def build_meld_cards_vector(self, mt_list):
-        """
-        Produce a one hot vector based on the deck template for a player's meld cards
-        :param mt_list: List of meld tuples
-        :return: NumPy Array
-        """
-
-        output = np.zeros(len(self.one_hot_template))
-        for meld_tuple in mt_list:
-            output += self.build_card_vector(meld_tuple[0].card)
-
-        return output

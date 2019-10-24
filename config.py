@@ -17,7 +17,7 @@ class Config:
     min_epsilon = 0.05
     epsilon_decrement = 0.01  # for get_epsilon_constant_decrement func
     epsilon_func = 'get_epsilon_linear_anneal'
-    state_size = 28
+    state_size = 76
     num_actions = 24
 
     # Benchmark Parameters
@@ -54,4 +54,4 @@ class Config:
     terminal_state = ','.join([str(x) for x in np.zeros(state_size)])
 
     # Misc Parameters
-    num_workers = 6  # for the data loader to feed the training of NN
+    num_workers = 0  # for the data loader to feed the training of NN

@@ -11,7 +11,7 @@ class RandomBot:
         :param state: N/A
         :return: Value corresponding to action index of vector corresponding to hand
         """
-        viable_card_indices = np.where(state.get_player_state(self.player)[:-4] > 0)[0]
+        viable_card_indices = np.where(state.get_player_state(self.player)[:24] > 0)[0]
         return np.random.choice(viable_card_indices)
 
     def assign_player(self, player):

@@ -1,21 +1,28 @@
 import util.db as db
 from config import Config as cfg
+import util.vector_builder as vb
 
 
-def log_state(trick_state, meld_state, card_1, card_2, mt_list, trick_score,
+def log_state(trick_start_state, first_move_state, meld_state, card_1, card_2, mt_list, trick_score,
               meld_score, winner, player_1, player_2, run_id):
+    """
+    PLAYER ORDER: GAME ORDER
+
+    This function adds the current state and current action.
+    The next state (ST+1) is inserted in update_state()
+    """
 
     score_1 = trick_score if player_1 == winner else 0
     score_2 = trick_score if player_2 == winner else 0
 
-    player_1_state_vector = ",".join([str(x) for x in trick_state.get_player_state(player_1)])
-    player_1_action_vector = ",".join([str(x) for x in trick_state.build_card_vector(card_1)])
+    player_1_state_vector = ",".join([str(x) for x in trick_start_state.get_player_state(player_1)])
+    player_1_action_vector = ",".join([str(x) for x in vb.build_card_vector(card_1)])
 
-    player_2_state_vector = ",".join([str(x) for x in trick_state.get_player_state(player_2)])
-    player_2_action_vector = ",".join([str(x) for x in trick_state.build_card_vector(card_2)])
+    player_2_state_vector = ",".join([str(x) for x in first_move_state.get_player_state(player_2)])
+    player_2_action_vector = ",".join([str(x) for x in vb.build_card_vector(card_2)])
 
     winner_state_vector = ",".join([str(x) for x in meld_state.get_player_state(winner)])
-    winner_action = ",".join([str(x) for x in meld_state.build_meld_cards_vector(mt_list)])
+    winner_action = ",".join([str(x) for x in vb.build_meld_cards_vector(mt_list)])
 
     with db.open_connection() as conn:
         with conn.cursor() as cursor:
@@ -33,10 +40,19 @@ def log_state(trick_state, meld_state, card_1, card_2, mt_list, trick_score,
     return row_id_1, row_id_2
 
 
-def update_state(trick_state, player_1, player_2, row_id_1, row_id_2):
+def update_state(trick_start_state, first_move_state, player_1, player_2, row_id_1, row_id_2):
+    """
+    PLAYER ORDER: TRICK ORDER
 
-    player_1_next_state_vector = ",".join([str(x) for x in trick_state.get_player_state(player_1)])
-    player_2_next_state_vector = ",".join([str(x) for x in trick_state.get_player_state(player_2)])
+    This function adds the next state (ST+1), see log_state() for additional info
+
+    The first player will have the trick start state only since he is playing the first card
+    The second player will have knowledge of what card was played first by first player, hence we need to update
+    the state with that information
+    """
+
+    player_1_next_state_vector = ",".join([str(x) for x in trick_start_state.get_player_state(player_1)])
+    player_2_next_state_vector = ",".join([str(x) for x in first_move_state.get_player_state(player_2)])
 
     with db.open_connection() as conn:
         with conn.cursor() as cursor:

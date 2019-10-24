@@ -39,6 +39,7 @@ class Game:
         self.melds = {}
         self.scores = {}
         self.meldedCards = {}
+        self.discard_pile = Hand()
 
         self.player_experience_ids = {}
 
@@ -48,8 +49,8 @@ class Game:
             self.scores[player] = [0]
             self.meldedCards[player] = {}
 
-    def create_state(self):
-        return State(self)
+    def create_state(self, played_card=None):
+        return State(self, played_card)
 
     def deal(self):
         for i in range(12):
@@ -167,10 +168,7 @@ class Game:
         :param priority: 0 or 1 for index in player list
         :return: index of winner (priority for next trick)
         """
-        trick_state = self.create_state()
-        if self.players[0] in self.player_experience_ids and self.run_id is not None:
-            sl.update_state(trick_state, self.players[0], self.players[1],
-                            self.player_experience_ids[self.players[0]], self.player_experience_ids[self.players[1]])
+        trick_start_state = self.create_state()
 
         trick = Trick(self.players, self.trump)
 
@@ -185,8 +183,15 @@ class Game:
         trick_player_list = [player_1, player_2]
 
         # Collect card for trick from each player based on order
-        card_1 = self.collect_trick_cards(player_1, trick_state)
-        card_2 = self.collect_trick_cards(player_2, trick_state)
+        card_1 = self.collect_trick_cards(player_1, trick_start_state)
+
+        # Recording the first card that was played
+        first_move_state = self.create_state(card_1)
+        if self.players[0] in self.player_experience_ids and self.run_id is not None:
+            sl.update_state(trick_start_state, first_move_state, player_1, player_2,
+                            self.player_experience_ids[player_1], self.player_experience_ids[player_2])
+
+        card_2 = self.collect_trick_cards(player_2, first_move_state)
 
         # TODO: make all players see all cards played
         print_divider()
@@ -234,11 +239,13 @@ class Game:
         trick_score = trick.calculate_trick_score(card_1, card_2)
         total_score = meld_score + trick_score
 
+        self.discard_pile.add_cards([card_1, card_2])
+
         # log states and actions
         # row_id_1 always corresponds to the experience row for player 0 in game (NOT TRICK)
         # same for row_id_2
         if self.run_id is not None:
-            row_id_1, row_id_2 = sl.log_state(trick_state, meld_state, card_1, card_2,
+            row_id_1, row_id_2 = sl.log_state(trick_start_state, first_move_state, meld_state, card_1, card_2,
                                               mt_list, trick_score, meld_score, winner, self.players[0],
                                               self.players[1],
                                               self.run_id)
