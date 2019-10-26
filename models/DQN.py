@@ -60,7 +60,7 @@ class DQN:
 
         return (initial_action_tensor == best_valid_action_prob).nonzero()[0].item()
 
-    def train_one_batch(self, states, actions, next_states, rewards):
+    def train_one_batch(self, states, actions, next_states, rewards, store_history):
         action_indices = actions.argmax(dim=1).unsqueeze(1)
         pred_Q = self.policy_net(states=states).gather(1, action_indices)  # Compute Q(s_t)
 
@@ -82,9 +82,11 @@ class DQN:
         self.policy_net.opt.step()
 
         # Save History
-        self.loss.append(loss.item())
+        if store_history:
+            self.policy_net.loss.append(loss.item())
+            self.policy_net.store_weight_and_grad_norms()
 
-    def train_self(self, num_epochs, exp_gen):
+    def train_self(self, num_epochs, exp_gen, store_history=False):
         device_mismatch = self.device != exp_gen.dataset.device
 
         self.policy_net.train()
@@ -97,7 +99,10 @@ class DQN:
                 if device_mismatch:
                     states, actions, next_states, rewards = states.to(self.device), actions.to(self.device), next_states.to(self.device), rewards.to(self.device)
 
-                self.train_one_batch(states=states, actions=actions, next_states=next_states, rewards=rewards)
+                self.train_one_batch(states=states, actions=actions, next_states=next_states, rewards=rewards, store_history=store_history)
+
+            if store_history:
+                self.policy_net.next_epoch()
 
     def update_target_net(self):
         self.target_net.load_state_dict(self.policy_net.state_dict())
@@ -109,10 +114,8 @@ class DQN:
     def assign_player(self, player):
         self.player = player
 
-    def save(self, title=None):
+    def save(self, folder=cfg.saved_models_folder, title=None):
         title = 'latest' if title is None else title
-        os.makedirs('saved_models', exist_ok=True)
-        with open(os.path.join('saved_models', title + '.pkl'), 'wb') as f:
+        os.makedirs(folder, exist_ok=True)
+        with open(os.path.join(folder, title + '.pkl'), 'wb') as f:
             pkl.dump(self, f)
-
-    # TODO: Add history of norms of gradients and weights
