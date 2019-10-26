@@ -24,7 +24,8 @@
 # Overall win-rate - COMPLETE
 
 from config import Config as cfg
-from util.util import init_players, get_epsilon_constant_decrement, get_epsilon_linear_anneal, generate_run_id, get_pretty_time, save_config
+from util.util import get_epsilon_constant_decrement, get_epsilon_linear_anneal
+import util.util as util
 from datasets.GameHistory import GameHistory
 from models.DQN import DQN
 from pinochle.Game import Game
@@ -34,33 +35,35 @@ from torch.utils.data import DataLoader
 import logging
 import time
 from util.Constants import Constants as cs
+import os
 
-logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
+cfg.run_id = util.generate_run_id()
+util.setup_file_logger(name=cfg.run_id, filename=cfg.run_id)
+logger = logging.getLogger(cfg.run_id)
 start_time = time.time()
 
 # Define players
 model_1 = DQN(**cfg.DQN_params)
 model_2 = model_1.copy()
 
-player_list = init_players(model_1=model_1,
-                           name_1=cfg.bot_1_name,
-                           model_2=model_2,
-                           name_2=cfg.bot_2_name,
-                           epsilon_func=globals()[cfg.epsilon_func])
+player_list = util.init_players(model_1=model_1,
+                                name_1=cfg.bot_1_name,
+                                model_2=model_2,
+                                name_2=cfg.bot_2_name,
+                                epsilon_func=globals()[cfg.epsilon_func])  # Importing string function name from config intentionally
 
 player_1_winrate = []
 previous_experience_id = 0
 
-cfg.run_id = generate_run_id()
-save_config(config=cfg, path=cfg.run_id)
+util.save_config(config=cfg, path=cfg.run_id)
 
 # For each cycle
-logging.info('Beginning run titled: ' + cfg.run_id)
+logger.info('Beginning run titled: ' + cfg.run_id)
 for i in range(1, cfg.num_cycles + 1):
     winner_list = []
 
     # For each episode, play through episode and insert each state/action pair into the database
-    logging.info('Beginning cycle: ' + str(i) + ' / ' + str(cfg.num_cycles) + '\tCumulative Time Elapsed: ' + get_pretty_time(time.time() - start_time))
+    logger.info('Beginning cycle: ' + str(i) + ' / ' + str(cfg.num_cycles) + '\tCumulative Time Elapsed: ' + util.get_pretty_time(time.time() - start_time))
     cycle_start_time = time.time()
 
     for j in range(cfg.episodes_per_cycle):
@@ -72,8 +75,8 @@ for i in range(1, cfg.num_cycles + 1):
         winner_list.append(game.play())
 
     # Import data from database based on experience replay buffer
-    logging.info('Data collection complete.\tTotal Episode Time: ' + get_pretty_time(time.time() - cycle_start_time))
-    logging.info('Loading experience and training model...')
+    logger.info('Data collection complete.\tTotal Episode Time: ' + util.get_pretty_time(time.time() - cycle_start_time))
+    logger.info('Loading experience and training model...')
     training_start_time = time.time()
 
     df = db.get_exp(run_id=cfg.run_id, buffer=cfg.experience_replay_buffer)
@@ -81,21 +84,21 @@ for i in range(1, cfg.num_cycles + 1):
     gh_gen = DataLoader(dataset=gh, batch_size=gh.batch_size, shuffle=True, num_workers=cfg.num_workers)
 
     # Train model
-    model_1.train_self(num_epochs=cfg.epochs_per_cycle, exp_gen=gh_gen)
+    model_1.train_self(num_epochs=cfg.epochs_per_cycle, exp_gen=gh_gen, store_history=cfg.store_history)
 
-    logging.info('Model training complete.\tTotal Training Time: ' + get_pretty_time(time.time() - training_start_time))
+    logger.info('Model training complete.\tTotal Training Time: ' + util.get_pretty_time(time.time() - training_start_time))
 
     # Update model_2
     if i % cfg.player_2_update_freq == 0:
-        logging.info(cs.DIVIDER)
-        logging.info('Setting model 2 equal to model 1...')
-        logging.info(cs.DIVIDER)
+        logger.info(cs.DIVIDER)
+        logger.info('Setting model 2 equal to model 1...')
+        logger.info(cs.DIVIDER)
         model_2 = model_1.copy()
 
     # Benchmark
     if i % cfg.benchmark_freq == 0:
-        logging.info(cs.DIVIDER)
-        logging.info('Benchmarking...')
+        logger.info(cs.DIVIDER)
+        logger.info('Benchmarking...')
 
         # List of player 1's win rate against player 2 by cycle
         cycle_win_rate = 1 - sum(winner_list) / len(winner_list)
@@ -110,10 +113,15 @@ for i in range(1, cfg.num_cycles + 1):
         db.insert_metrics(cfg.run_id, cycle_win_rate, random_win_rate, average_reward)
 
         previous_experience_id = db.get_max_id(cfg.run_id)
-        logging.info(cs.DIVIDER)
+        logger.info(cs.DIVIDER)
 
-    logging.info('Cycle ' + str(i) + ' / ' + str(cfg.num_cycles) + ' complete.\tTotal Cycle Time: ' + get_pretty_time(time.time() - cycle_start_time))
-    logging.info(cs.DIVIDER)
+    # Checkpoint
+    if cfg.checkpoint_freq is not None and i % cfg.checkpoint_freq == 0:
+        logger.info('Model checkpoint reached. Saving checkpoint...')
+        model_1.save(folder=os.path.join(cfg.checkpoint_folder, cfg.run_id), title=util.get_checkpoint_model_name(cycle=i))
 
-logging.info('Training complete.\tTotal Run Time: ' + get_pretty_time(time.time() - start_time) + '\tSaving model and exiting...')
-model_1.save(title=cfg.run_id)
+    logger.info('Cycle ' + str(i) + ' / ' + str(cfg.num_cycles) + ' complete.\tTotal Cycle Time: ' + util.get_pretty_time(time.time() - cycle_start_time))
+    logger.info(cs.DIVIDER)
+
+logger.info('Training complete.\tTotal Run Time: ' + util.get_pretty_time(time.time() - start_time) + '\tSaving model and exiting...')
+model_1.save(folder=cfg.saved_models_folder, title=cfg.run_id)

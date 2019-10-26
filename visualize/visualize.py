@@ -4,6 +4,10 @@ import util.db as db
 import matplotlib.pyplot as plt
 import util.util as uu
 import numpy as np
+import pickle as pkl
+import os
+from config import Config as cfg
+import util.util as util
 
 
 def get_diagnostic_plots(run_id):
@@ -38,3 +42,13 @@ def get_diagnostic_plots(run_id):
     f.tight_layout()
     st.set_y(0.96)
     f.subplots_adjust(top=0.9)
+
+
+def get_model_checkpoint(run_id, cycle=-1):
+    # cycle of -1 (default) implies the user wants the largest checkpoint value available
+    if cycle == -1:
+        cycle = util.get_max_checkpoint_cycle(run_id=run_id)
+
+    path = os.path.join(cfg.checkpoint_folder, run_id, util.get_checkpoint_model_name(cycle=cycle) + '.pkl')
+    with open(path, 'rb') as f:
+        return pkl.load(f)

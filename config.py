@@ -7,12 +7,14 @@ class Config:
     # Meta-parameters
     num_cycles = 100
     episodes_per_cycle = 50
-    experience_replay_buffer = 1e6
-    epochs_per_cycle = 100
+    experience_replay_buffer = 1e5
+    epochs_per_cycle = 20
     player_2_update_freq = 10
     game = 'pinochle'
     run_id = 'TEST'
     logging_level = logging.INFO
+    store_history = True  # Whether to store gradients & friends in the neural network class
+    checkpoint_freq = 5  # Frequency (in cycles) to checkpoint model (save to checkpoints folder)
 
     # Epsilon
     epsilon_func = 'get_epsilon_linear_anneal'
@@ -39,7 +41,7 @@ class Config:
         'num_actions': num_actions,
         'terminal_state_tensor': torch.zeros(state_size),
         'num_layers': 3,
-        'hidden_units_per_layer': 10,
+        'hidden_units_per_layer': 32,
         'device': 'cpu'
     }
 
@@ -60,3 +62,6 @@ class Config:
 
     # Misc Parameters
     num_workers = 0  # for the data loader to feed the training of NN
+    log_folder = 'logs'
+    saved_models_folder = 'saved_models'
+    checkpoint_folder = 'model_checkpoints'
