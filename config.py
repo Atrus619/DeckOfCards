@@ -12,7 +12,7 @@ class Config:
     player_2_update_freq = 10
     game = 'pinochle'
     run_id = 'TEST'
-    logging_level = logging.INFO
+    logging_level = logging.DEBUG
 
     # Epsilon
     epsilon_func = 'get_epsilon_linear_anneal'
@@ -29,6 +29,9 @@ class Config:
     benchmark_freq = 5
     random_bot_name = 'RANDOM_BOT_TEST'
     random_bot_cycles = 30
+
+    # Human benchmark
+    human_test = False
 
     # NN Parameters
     DQN_params = {

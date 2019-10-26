@@ -117,3 +117,7 @@ for i in range(1, cfg.num_cycles + 1):
 
 logging.info('Training complete.\tTotal Run Time: ' + get_pretty_time(time.time() - start_time) + '\tSaving model and exiting...')
 model_1.save(title=cfg.run_id)
+
+if cfg.human_test:
+    logging.info("Human test enabled, initializing AI uprising...")
+    benchmark.human_test(model_1)

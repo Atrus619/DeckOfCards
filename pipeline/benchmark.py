@@ -5,6 +5,7 @@ from util import db
 from classes.Agent import Agent
 import logging
 import util.util as util
+from classes.Human import Human
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
@@ -24,6 +25,17 @@ def random_bot_test(model):
         winner_list.append(game.play())
 
     return 1 - sum(winner_list) / len(winner_list)
+
+
+def human_test(model):
+    player_2 = Human("Hades")
+    model.policy_net.eval()
+
+    # Initialize game
+    player_list = [model.player, player_2]
+    game = Game(name="pinochle", players=player_list, run_id=None, current_cycle=None, human_test=True)
+    game.deal()
+    game.play()
 
 
 def get_average_reward(run_id, previous_experience_id, agent_id):

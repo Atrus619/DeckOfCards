@@ -13,7 +13,7 @@ class Agent(Player):
         self.random_bot = RandomBot()
         self.random_bot.assign_player(self)
 
-    def get_action(self, state, is_hand, current_cycle):
+    def get_action(self, state, game, is_hand, current_cycle):
         """
         Retrieves the index of a legal action from the model. With probability epsilon, will take a random action.
         :param state: Current state of the game
@@ -23,7 +23,7 @@ class Agent(Player):
         """
         epsilon = self.epsilon_func(current_cycle=current_cycle)
         if random.random() > epsilon:
-            return self.model.get_legal_action(state=state, player=self, is_hand=is_hand) if is_hand else None  # TODO: Implement meld later
+            return self.model.get_legal_action(state=state, game=game, player=self, is_hand=is_hand) if is_hand else None  # TODO: Implement meld later
         else:
             return self.random_bot.get_legal_action(state=state)
 

@@ -5,7 +5,11 @@ from models.nets.FCNet import FCNet
 from copy import deepcopy
 import pickle as pkl
 import os
+from config import Config as cfg
+import logging
+from util.Constants import Constants as cs
 
+logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
 class DQN:
     """
@@ -30,7 +34,7 @@ class DQN:
         # History
         self.loss = []
 
-    def get_legal_action(self, state, player, is_hand):
+    def get_legal_action(self, state, game, player, is_hand):
         # Picks the highest output legal action, ignoring illegal actions
         valid_action_mask = state.get_valid_action_mask(player=player, is_hand=is_hand)
         invalid_action_mask = (valid_action_mask == 0).nonzero()
@@ -39,6 +43,18 @@ class DQN:
         # Setting to large negative number to deal with ties.
         # If an invalid option and a valid option had the same value, it could choose the invalid option, leading to a downstream error.
         initial_action_tensor[invalid_action_mask] = -999
+
+        if cfg.human_test:
+            logging.debug("\n")
+            logging.debug(cs.DIVIDER)
+            logging.debug("Action values for each card in agent's hand:")
+            actions = torch.nn.Softmax(dim=0)(initial_action_tensor)
+            for i, action in enumerate(actions):
+                # card_index = (initial_action_tensor == action).nonzero()[0].item()
+                card = player.convert_model_output(output_index=i, game=game, is_hand=True)
+                if card is None:
+                    continue
+                logging.debug("Card: " + card + "\t Action value: {0:.2%}".format(action.item()))
 
         best_valid_action_prob = initial_action_tensor[valid_action_mask.nonzero()].max()
 
