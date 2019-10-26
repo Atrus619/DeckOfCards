@@ -52,3 +52,19 @@ def get_model_checkpoint(run_id, cycle=-1):
     path = os.path.join(cfg.checkpoint_folder, run_id, util.get_checkpoint_model_name(cycle=cycle) + '.pkl')
     with open(path, 'rb') as f:
         return pkl.load(f)
+
+
+def plot_losses(model):
+    fig = plt.figure()
+    plt.plot(model.policy_net.losses)
+    fig.suptitle('Avg Loss by Epoch')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+
+
+def plot_Qs(model):
+    fig = plt.figure()
+    plt.plot(model.policy_net.Qs)
+    fig.suptitle('Avg Loss by Epoch')
+    plt.xlabel('Epoch')
+    plt.ylabel('Q')

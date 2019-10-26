@@ -66,6 +66,7 @@ class DQN:
         # Save History
         if store_history:
             self.policy_net.loss.append(loss.item())
+            self.policy_net.Q.append(pred_Q.mean().item())
             self.policy_net.store_weight_and_grad_norms()
 
     def train_self(self, num_epochs, exp_gen, store_history=False):

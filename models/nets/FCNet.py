@@ -55,7 +55,10 @@ class FCNet(nn.Module):
         self.layer_list_names = []
 
         self.loss = []  # List of loss per step
-        self.losses = []  # List of loss per epoch
+        self.losses = []  # List of avg losses per epoch
+
+        self.Q = []  # List of Q's per step
+        self.Qs = []  # List of avg Q's per epoch
 
         self.norm_num = 2
         self.bins = 20  # Choice of bins=20 seems to look nice. Subject to change.
@@ -128,6 +131,9 @@ class FCNet(nn.Module):
 
         self.losses.append(np.mean(self.loss))
         self.loss = []
+
+        self.Qs.append(np.mean(self.Q))
+        self.Q = []
 
         self.update_wnormz()
         self.update_gnormz()
