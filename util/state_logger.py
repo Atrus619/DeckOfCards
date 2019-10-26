@@ -1,6 +1,7 @@
 import util.db as db
 from config import Config as cfg
 import util.vector_builder as vb
+import util.util as util
 
 
 def log_state(trick_start_state, first_move_state, meld_state, card_1, card_2, mt_list, trick_score,
@@ -12,8 +13,8 @@ def log_state(trick_start_state, first_move_state, meld_state, card_1, card_2, m
     The next state (ST+1) is inserted in update_state()
     """
 
-    score_1 = trick_score if player_1 == winner else 0
-    score_2 = trick_score if player_2 == winner else 0
+    score_1 = util.get_trick_reward(trick_score=trick_score, player=player_1, winner=winner)
+    score_2 = util.get_trick_reward(trick_score=trick_score, player=player_2, winner=winner)
 
     player_1_state_vector = ",".join([str(x) for x in trick_start_state.get_player_state(player_1)])
     player_1_action_vector = ",".join([str(x) for x in vb.build_card_vector(card_1)])

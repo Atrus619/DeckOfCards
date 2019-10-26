@@ -34,6 +34,9 @@ class State:
 
     def convert_to_human_readable_format(self, player):
         print_divider()
+        logging.debug(f'Trump Suit: {self.game.trump}')
+
+        print_divider()
         self.game.hands[player].show()
 
         print_divider()

@@ -31,11 +31,18 @@ def human_test(model):
     player_2 = Human("Hades")
     model.policy_net.eval()
 
+    # Set logging level to debug
+    logging.getLogger().setLevel(logging.DEBUG)
+    logging.info("Human test enabled, initializing AI uprising...")
+
     # Initialize game
     player_list = [model.player, player_2]
     game = Game(name="pinochle", players=player_list, run_id=None, current_cycle=None, human_test=True)
     game.deal()
     game.play()
+
+    # Set logging level back to config
+    logging.getLogger().setLevel(cfg.logging_level)
 
 
 def get_average_reward(run_id, previous_experience_id, agent_id):

@@ -143,3 +143,19 @@ def get_max_checkpoint_cycle(run_id):
     path = os.path.join(cfg.checkpoint_folder, run_id)
     checkpoints = [int(re.search('\d+', cp)[0]) for cp in os.listdir(path)]
     return np.max(checkpoints)
+
+
+def get_model_checkpoint(run_id, cycle=-1):
+    # cycle of -1 (default) implies the user wants the largest checkpoint value available
+    if cycle == -1:
+        cycle = get_max_checkpoint_cycle(run_id=run_id)
+
+    path = os.path.join(cfg.checkpoint_folder, run_id, get_checkpoint_model_name(cycle=cycle) + '.pkl')
+    with open(path, 'rb') as f:
+        return pkl.load(f)
+
+
+def get_trick_reward(trick_score, player, winner):
+    # Returns reward for player based on trick score and trick winner
+    # Positive if winner, negative if loser.
+    return trick_score * -1 if player != winner else trick_score

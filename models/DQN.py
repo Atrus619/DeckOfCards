@@ -8,8 +8,10 @@ import os
 from config import Config as cfg
 import logging
 from util.Constants import Constants as cs
+from util.Vectors import Vectors as vs
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
+
 
 class DQN:
     """
@@ -44,17 +46,16 @@ class DQN:
         # If an invalid option and a valid option had the same value, it could choose the invalid option, leading to a downstream error.
         initial_action_tensor[invalid_action_mask] = -999
 
-        if cfg.human_test:
-            logging.debug("\n")
+        if game.human_test:
             logging.debug(cs.DIVIDER)
             logging.debug("Action values for each card in agent's hand:")
             actions = torch.nn.Softmax(dim=0)(initial_action_tensor)
             for i, action in enumerate(actions):
-                # card_index = (initial_action_tensor == action).nonzero()[0].item()
                 card = player.convert_model_output(output_index=i, game=game, is_hand=True)
                 if card is None:
                     continue
-                logging.debug("Card: " + card + "\t Action value: {0:.2%}".format(action.item()))
+                logging.debug("Card: " + str(vs.PINOCHLE_ONE_HOT_VECTOR[i]) + "/" + \
+                              card + "\t Action value: {0:.2%}".format(action.item()))
 
         best_valid_action_prob = initial_action_tensor[valid_action_mask.nonzero()].max()
 

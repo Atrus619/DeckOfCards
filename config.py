@@ -32,9 +32,6 @@ class Config:
     random_bot_name = 'RANDOM_BOT_TEST'
     random_bot_cycles = 30
 
-    # Human benchmark
-    human_test = False
-
     # NN Parameters
     DQN_params = {
         'update_target_net_freq': 10,  # In epochs
@@ -68,3 +65,4 @@ class Config:
     log_folder = 'logs'
     saved_models_folder = 'saved_models'
     checkpoint_folder = 'model_checkpoints'
+    experiment_folder = 'experiments'
