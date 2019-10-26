@@ -120,8 +120,9 @@ for i in range(1, cfg.num_cycles + 1):
         logger.info('Model checkpoint reached. Saving checkpoint...')
         model_1.save(folder=os.path.join(cfg.checkpoint_folder, cfg.run_id), title=util.get_checkpoint_model_name(cycle=i))
 
-    logger.info('Cycle ' + str(i) + ' / ' + str(cfg.num_cycles) + ' complete.\tTotal Cycle Time: ' + util.get_pretty_time(time.time() - cycle_start_time))
-    logger.info(cs.DIVIDER)
+logging.info('Training complete.\tTotal Run Time: ' + get_pretty_time(time.time() - start_time) + '\tSaving model and exiting...')
+model_1.save(title=cfg.run_id)
 
-logger.info('Training complete.\tTotal Run Time: ' + util.get_pretty_time(time.time() - start_time) + '\tSaving model and exiting...')
-model_1.save(folder=cfg.saved_models_folder, title=cfg.run_id)
+if cfg.human_test:
+    logging.info("Human test enabled, initializing AI uprising...")
+    benchmark.human_test(model_1)

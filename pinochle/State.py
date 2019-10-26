@@ -41,8 +41,8 @@ class State:
 
         current_scores = [self.game.scores[player][-1] for player in self.game.players]
         print_divider()
-        logging.debug("Player 1 Score: " + current_scores[0])
-        logging.debug("Player 2 Score: " + current_scores[1])
+        logging.debug("Player 1 Score: " + str(current_scores[0]))
+        logging.debug("Player 2 Score: " + str(current_scores[1]))
 
     def get_player_state(self, player):
         """

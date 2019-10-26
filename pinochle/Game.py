@@ -19,7 +19,7 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
 # pinochle rules: https://www.pagat.com/marriage/pin2hand.html
 class Game:
-    def __init__(self, name, players, run_id="42069", current_cycle=None):
+    def __init__(self, name, players, run_id="42069", current_cycle=None, human_test=False):
         self.run_id = run_id
         self.name = name.upper()
         self.players = players  # This is a list
@@ -29,6 +29,7 @@ class Game:
         self.trump = None
         self.meld_util = None
         self.current_cycle = current_cycle  # To determine the current value of epsilon
+        self.human_test = human_test
 
         if self.name == cs.PINOCHLE:
             self.deck = Deck("pinochle")
@@ -67,10 +68,12 @@ class Game:
         if type(player).__name__ == 'Human':
             user_input = player.get_action(state, msg=player.name + " select card for trick:")
         else:  # Bot
-            action = player.get_action(state, current_cycle=self.current_cycle, is_hand=True)
+            if self.human_test:
+                logging.debug("Model hand before action:")
+                state.convert_to_human_readable_format(player)
+
+            action = player.get_action(state, self, current_cycle=self.current_cycle, is_hand=True)
             user_input = player.convert_model_output(output_index=action, game=self, is_hand=True)
-        if user_input is None:
-            import pdb; pdb.set_trace()
         source = user_input[0]
         index = int(user_input[1:])
 
@@ -86,6 +89,7 @@ class Game:
         return card
 
     def collect_meld_cards(self, player, state, limit=12):
+
         """
         Collecting cards for meld scoring from player who won trick
         :param player: Player we are collecting from
@@ -223,14 +227,15 @@ class Game:
 
         # Verify that meld is valid. If meld is invalid, force the user to retry.
         meld_state = self.create_state()
-
-        while 1:
-            mt_list, valid = self.collect_meld_cards(winner, meld_state)
-            if valid:
-                break
-            else:
-                print_divider()
-                logging.debug("Invalid combination submitted, please try again.")
+        mt_list = []
+        # no melding in this version
+        # while 1:
+        #     mt_list, valid = self.collect_meld_cards(winner, meld_state)
+        #     if valid:
+        #         break
+        #     else:
+        #         print_divider()
+        #         logging.debug("Invalid combination submitted, please try again.")
 
         # Update scores
         if len(mt_list) == 0:  # No cards melded, so score is 0

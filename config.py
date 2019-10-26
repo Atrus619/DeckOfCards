@@ -32,6 +32,9 @@ class Config:
     random_bot_name = 'RANDOM_BOT_TEST'
     random_bot_cycles = 30
 
+    # Human benchmark
+    human_test = False
+
     # NN Parameters
     DQN_params = {
         'update_target_net_freq': 10,  # In epochs
