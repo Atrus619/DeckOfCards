@@ -8,6 +8,7 @@ import os
 import matplotlib.pyplot as plt
 import re
 import numpy as np
+import pandas as pd
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
@@ -157,3 +158,21 @@ def get_trick_reward(trick_score, player, winner):
     # Returns reward for player based on trick score and trick winner
     # Positive if winner, negative if loser.
     return trick_score * -1 if player != winner else trick_score
+
+
+def get_experiment_file(file):
+    return pd.read_csv(os.path.join(cfg.experiment_folder, file), dtype={'episodes_per_cycle': int})
+
+
+def overwrite_cfg(exp, config):
+    for key, value in exp.items():
+        if not pd.isna(value):
+            if key in dir(config):
+                setattr(config, key, value)
+            elif key in config.DQN_params:
+                config.DQN_params[key] = value
+            elif key in config.GH_params:
+                config.GH_params[key] = value
+            else:
+                raise Exception(f'Bad column title in file: {key}')
+    return config

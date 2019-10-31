@@ -38,7 +38,7 @@ from util.Constants import Constants as cs
 import os
 
 
-def run_full_pipeline(config):
+def run_full_experiment(config):
     util.setup_file_logger(name=config.run_id, filename=config.run_id)
     logger = logging.getLogger(config.run_id)
     start_time = time.time()
@@ -107,8 +107,8 @@ def run_full_pipeline(config):
             player_1_winrate.append(cycle_win_rate)
     
             # Play against random bot and measure win rate
-            model_copy = model_1.copy()
-            random_win_rate = benchmark.random_bot_test(model_copy)
+            random_win_rate = benchmark.random_bot_test(agent=player_list[0])
+            logger.info(f'Winrate vs. Random Bot: {random_win_rate * 100:.1f}%')
     
             # Collect average reward from database
             average_reward = benchmark.get_average_reward(config.run_id, previous_experience_id, config.bot_1_name)
@@ -131,4 +131,4 @@ def run_full_pipeline(config):
 
 if __name__ == '__main__':
     cfg.run_id = util.generate_run_id()
-    run_full_pipeline(config=cfg)
+    run_full_experiment(config=cfg)
