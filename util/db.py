@@ -116,3 +116,18 @@ def get_rewards_by_id(run_id, previous_experience_id, agent_id):
 
     df = pd.DataFrame(result, columns=['reward'])
     return df
+
+
+def clear_run(run_id):
+    with open_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "DELETE FROM cards.experience \
+                WHERE run_id = '" + str(run_id) + "';"
+            )
+            cursor.execute(
+                "DELETE FROM cards.metrics \
+                WHERE run_id = '" + str(run_id) + "';"
+            )
+
+        conn.commit()

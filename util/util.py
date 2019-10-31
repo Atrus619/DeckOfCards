@@ -44,22 +44,22 @@ def generate_run_id():
         return cfg.run_id
 
 
-def get_epsilon_linear_anneal(current_cycle):
+def get_epsilon_linear_anneal(current_cycle, config=cfg):
     """
     Returns an epsilon (probability of taking random action) based on the current cycle using linear annealing
     :param current_cycle: Current cycle of training
     """
     if current_cycle is None:
-        return cfg.eval_epsilon
+        return config.eval_epsilon
 
-    max_epsilon = cfg.max_epsilon
-    min_epsilon = cfg.min_epsilon
-    num_cycles = cfg.num_cycles
+    max_epsilon = config.max_epsilon
+    min_epsilon = config.min_epsilon
+    num_cycles = config.num_cycles
 
     return max(min_epsilon, max_epsilon - current_cycle / num_cycles * (max_epsilon - min_epsilon))
 
 
-def get_epsilon_constant_decrement(current_cycle, decrement=None):
+def get_epsilon_constant_decrement(current_cycle, config=cfg, decrement=None):
     """
     Returns an epsilon (probability of taking random action) based on the current cycle using a constant decrement
     Cannot go below the minimum epsilon in config
@@ -67,11 +67,11 @@ def get_epsilon_constant_decrement(current_cycle, decrement=None):
     :param decrement: Amount to decrease epsilon by per cycle
     """
     if current_cycle is None:
-        return cfg.eval_epsilon
+        return config.eval_epsilon
 
-    max_epsilon = cfg.max_epsilon
-    min_epsilon = cfg.min_epsilon
-    decrement = cfg.epsilon_decrement if decrement is None else decrement
+    max_epsilon = config.max_epsilon
+    min_epsilon = config.min_epsilon
+    decrement = config.epsilon_decrement if decrement is None else decrement
 
     return max(min_epsilon, max_epsilon - (current_cycle - 1) * decrement)
 
@@ -169,6 +169,7 @@ def get_experiment_file(file):
 
 
 def overwrite_cfg(exp, config):
+    config.logging_level = logging.INFO
     for key, value in exp.items():
         if not pd.isna(value):
             if key in dir(config):
