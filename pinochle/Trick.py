@@ -22,40 +22,6 @@ class Trick:
     def add_card(self, card, player):
         self.cards_in_play[player].append(card)
 
-    # def evaluate(self, cards):
-    #     for player in self.players:
-
-    def compare_cards(self, card_1, card_2):
-        """
-        :param card_1:
-        :param card_2: 
-        :return: the number that represents the card that won
-        """
-        value_map = cs.STANDARD_CARDS_VALUE
-
-        if card_1 == card_2:
-            return 0
-
-        if self.trump == card_1.suit:
-            if self.trump != card_2.suit:
-                return 0
-            elif value_map[card_1.value] >= value_map[card_2.value]:
-                return 0
-            else:
-                return 1
-
-        elif self.trump == card_2.suit:
-            return 1
-
-        elif card_1.suit == card_2.suit:
-            if value_map[card_1.value] >= value_map[card_2.value]:
-                return 0
-            else:
-                return 1
-
-        else:
-            return 0
-
     def calculate_trick_score(self, card_1, card_2):
         if card_1.value not in self.card_scores:
             card_1_score = 0

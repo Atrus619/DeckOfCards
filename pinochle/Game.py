@@ -13,6 +13,7 @@ import numpy as np
 import util.state_logger as sl
 import logging
 from config import Config as cfg
+import pinochle.card_util as cu
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
@@ -27,6 +28,7 @@ class Game:
         self.dealer = players[0]
         self.trump_card = None
         self.trump = None
+        self.priority = random.randint(0, 1)
         self.meld_util = None
         self.current_cycle = current_cycle  # To determine the current value of epsilon
         self.human_test = human_test
@@ -168,9 +170,9 @@ class Game:
 
         return [MeldTuple(card, combo_name, meld_class, score) for card in collected_cards], valid
 
-    def play_trick(self, priority):
+    def play_trick(self):
         """
-        :param priority: 0 or 1 for index in player list
+        priority: 0 or 1 for index in player list
         :return: index of winner (priority for next trick)
         """
         trick_start_state = self.create_state()
@@ -183,7 +185,7 @@ class Game:
         # THEY COULD BE IN DIFFERENT ORDER
         """
         player_order = list(self.players)
-        player_1 = player_order.pop(priority)
+        player_1 = player_order.pop(self.priority)
         player_2 = player_order[0]
         trick_player_list = [player_1, player_2]
 
@@ -205,7 +207,7 @@ class Game:
         logging.debug("Card 2: " + str(card_2))
 
         # Determine winner of trick based on collected cards
-        result = trick.compare_cards(card_1, card_2)
+        result = cu.compare_cards(self.trump, card_1, card_2)
         print_divider()
         logging.debug("VICTOR : " + str(player_1.name if result == 0 else player_2.name))
 
@@ -266,12 +268,12 @@ class Game:
         for mt in mt_list:
             self.melds[winner].add_melded_card(mt)
 
-        return self.players.index(winner)
+        # set new priority
+        self.priority = self.players.index(winner)
 
     def play(self):
-        priority = random.randint(0, 1)
         while len(self.deck) > 0:
-            priority = self.play_trick(priority)
+            self.play_trick()
 
         if self.run_id is not None:
             sl.set_terminal_state(self.player_experience_ids[self.players[0]],
