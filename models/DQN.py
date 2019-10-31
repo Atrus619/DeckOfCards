@@ -113,9 +113,6 @@ class DQN:
     def copy(self):
         return deepcopy(self)
 
-    def assign_player(self, player):
-        self.player = player
-
     def save(self, folder=cfg.saved_models_folder, title=None):
         title = 'latest' if title is None else title
         os.makedirs(folder, exist_ok=True)

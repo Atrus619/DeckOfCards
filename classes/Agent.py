@@ -11,12 +11,12 @@ class Agent(Player):
         self.one_hot_template = vs.PINOCHLE_ONE_HOT_VECTOR
         self.epsilon_func = epsilon_func
         self.random_bot = RandomBot()
-        self.random_bot.assign_player(self)
 
     def get_action(self, state, game, is_hand, current_cycle):
         """
         Retrieves the index of a legal action from the model. With probability epsilon, will take a random action.
         :param state: Current state of the game
+        :param game: game details
         :param is_hand: Boolean corresponding to whether this is a hand action or meld action
         :param current_cycle: Current cycle in training process, used to determine value of epsilon
         :return: Index of action corresponding to state.one_hot_vector of cards
@@ -25,7 +25,7 @@ class Agent(Player):
         if random.random() > epsilon:
             return self.model.get_legal_action(state=state, game=game, player=self, is_hand=is_hand) if is_hand else None  # TODO: Implement meld later
         else:
-            return self.random_bot.get_legal_action(state=state)
+            return self.random_bot.get_legal_action(state=state, player=self)
 
     def convert_model_output(self, output_index, game, is_hand=True):
         """

@@ -14,7 +14,6 @@ def random_bot_test(model):
     winner_list = []
     random_bot = RandomBot()
     player_2 = Agent(name=cfg.random_bot_name, model=random_bot, epsilon_func=util.get_random_bot_epsilon)
-    random_bot.assign_player(player_2)
     model.policy_net.eval()
 
     for j in range(cfg.random_bot_cycles):
