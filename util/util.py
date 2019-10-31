@@ -80,6 +80,10 @@ def get_random_bot_epsilon(current_cycle):
     return 1
 
 
+def get_expert_epsilon(current_cycle):
+    return 1
+
+
 def get_pretty_time(duration, num_digits=2):
     # Duration is assumed to be in seconds. Returns a string with the appropriate suffix (s/m/h)
     if duration > 60**2:

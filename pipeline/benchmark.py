@@ -6,6 +6,7 @@ from classes.Agent import Agent
 import logging
 import util.util as util
 from classes.Human import Human
+from pinochle.scripted_bots.TheProfessional import TheProfessional
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
@@ -13,6 +14,7 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 def random_bot_test(agent):
     winner_list = []
     player_2 = Agent(name=cfg.random_bot_name, model=RandomBot(), epsilon_func=util.get_random_bot_epsilon)
+
     agent.model.policy_net.eval()
 
     for j in range(cfg.random_bot_cycles):
@@ -32,6 +34,24 @@ def human_test(model):
     # Set logging level to debug
     logging.getLogger().setLevel(logging.DEBUG)
     logging.info("Human test enabled, initializing AI uprising...")
+
+    # Initialize game
+    player_list = [model.player, player_2]
+    game = Game(name="pinochle", players=player_list, run_id=None, current_cycle=None, human_test=True)
+    game.deal()
+    game.play()
+
+    # Set logging level back to config
+    logging.getLogger().setLevel(cfg.logging_level)
+
+
+def the_professional_test(model):
+    player_2 = Agent(name="Leon", model=TheProfessional(), epsilon_func=util.get_expert_epsilon)
+    model.policy_net.eval()
+
+    # Set logging level to debug
+    logging.getLogger().setLevel(logging.DEBUG)
+    logging.info("Leon is taking care of business, prepare yourself...")
 
     # Initialize game
     player_list = [model.player, player_2]
