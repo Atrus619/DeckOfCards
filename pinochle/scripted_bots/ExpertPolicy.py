@@ -1,9 +1,9 @@
 import pinochle.card_util as cu
 import util.vector_builder as vb
-import numpy as np
 
-class TheProfessional:
-    def get_legal_action(self, state, game, player, is_hand):
+
+class ExpertPolicy:
+    def get_legal_action(self, state, player, game, is_hand):
         """
         Leon, the professional takes care of business. This is our exquisitely hand crafted expert policy.
         Works with trick play only for now.

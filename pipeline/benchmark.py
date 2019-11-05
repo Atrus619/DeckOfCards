@@ -1,26 +1,26 @@
 from config import Config as cfg
-from pinochle.scripted_bots.RandomBot import RandomBot
 from pinochle.Game import Game
 from util import db
 from classes.Agent import Agent
+from classes.Epsilon import Epsilon
 import logging
 import util.util as util
 from classes.Human import Human
-from pinochle.scripted_bots.TheProfessional import TheProfessional
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
 
-def random_bot_test(agent):
+def benchmark_test(model, benchmark_model, benchmark_bot_name, run_id=None):
     winner_list = []
-    player_2 = Agent(name=cfg.random_bot_name, model=RandomBot(), epsilon_func=util.get_random_bot_epsilon)
+    epsilon = Epsilon(epsilon_func='eval')
+    player_1 = Agent(name=cfg.bot_1_name, model=model, epsilon=epsilon)
+    player_2 = Agent(name=benchmark_bot_name, model=benchmark_model, epsilon=epsilon)
 
-    agent.model.policy_net.eval()
+    player_1.model.policy_net.eval()
 
     for j in range(cfg.random_bot_cycles):
-        # Initialize game
-        player_list = [agent, player_2]
-        game = Game(name="pinochle", players=player_list, run_id=None, current_cycle=None)
+        player_list = [player_1, player_2]
+        game = Game(name="pinochle", players=player_list, run_id=run_id, current_cycle=None)
         game.deal()
         winner_list.append(game.play())
 
@@ -28,6 +28,8 @@ def random_bot_test(agent):
 
 
 def human_test(model):
+    epsilon = Epsilon(epsilon_func='eval')
+    player_1 = Agent(name=cfg.bot_1_name, model=model, epsilon=epsilon)
     player_2 = Human("Hades")
     model.policy_net.eval()
 
@@ -36,25 +38,7 @@ def human_test(model):
     logging.info("Human test enabled, initializing AI uprising...")
 
     # Initialize game
-    player_list = [model.player, player_2]
-    game = Game(name="pinochle", players=player_list, run_id=None, current_cycle=None, human_test=True)
-    game.deal()
-    game.play()
-
-    # Set logging level back to config
-    logging.getLogger().setLevel(cfg.logging_level)
-
-
-def the_professional_test(model):
-    player_2 = Agent(name="Leon", model=TheProfessional(), epsilon_func=util.get_expert_epsilon)
-    model.policy_net.eval()
-
-    # Set logging level to debug
-    logging.getLogger().setLevel(logging.DEBUG)
-    logging.info("Leon is taking care of business, prepare yourself...")
-
-    # Initialize game
-    player_list = [model.player, player_2]
+    player_list = [player_1, player_2]
     game = Game(name="pinochle", players=player_list, run_id=None, current_cycle=None, human_test=True)
     game.deal()
     game.play()
@@ -69,6 +53,6 @@ def get_average_reward(run_id, previous_experience_id, agent_id):
     logging.debug(df.sum())
     average = df.sum() / (cfg.benchmark_freq * cfg.episodes_per_cycle)
 
-    logging.info("Agent: " + agent_id + "\tAverage reward: " + str(round(average.reward, 2)))
+    logging.info("Average reward since last benchmark: " + str(round(average.reward, 2)))
 
     return average.reward

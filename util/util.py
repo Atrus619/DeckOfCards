@@ -1,4 +1,3 @@
-from classes.Agent import Agent
 import logging
 from config import Config as cfg
 import util.db as db
@@ -9,6 +8,7 @@ import matplotlib.pyplot as plt
 import re
 import numpy as np
 import pandas as pd
+import shutil
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
@@ -30,58 +30,11 @@ def print_divider():
     logging.debug(cs.DIVIDER)
 
 
-def init_players(model_1, name_1, model_2, name_2, epsilon_func):
-    # Returns a player_list to be used in setting up games based on passed Agents and models
-    player_1 = Agent(name=name_1, model=model_1, epsilon_func=epsilon_func)
-    player_2 = Agent(name=name_2, model=model_2, epsilon_func=epsilon_func)
-    return [player_1, player_2]
-
-
 def generate_run_id():
     if cfg.run_id == 'TEST':
         return cfg.run_id + '_' + str(db.get_global_max_id())
     else:
         return cfg.run_id
-
-
-def get_epsilon_linear_anneal(current_cycle, config=cfg):
-    """
-    Returns an epsilon (probability of taking random action) based on the current cycle using linear annealing
-    :param current_cycle: Current cycle of training
-    """
-    if current_cycle is None:
-        return config.eval_epsilon
-
-    max_epsilon = config.max_epsilon
-    min_epsilon = config.min_epsilon
-    num_cycles = config.num_cycles
-
-    return max(min_epsilon, max_epsilon - current_cycle / num_cycles * (max_epsilon - min_epsilon))
-
-
-def get_epsilon_constant_decrement(current_cycle, config=cfg, decrement=None):
-    """
-    Returns an epsilon (probability of taking random action) based on the current cycle using a constant decrement
-    Cannot go below the minimum epsilon in config
-    :param current_cycle: Current training cycle
-    :param decrement: Amount to decrease epsilon by per cycle
-    """
-    if current_cycle is None:
-        return config.eval_epsilon
-
-    max_epsilon = config.max_epsilon
-    min_epsilon = config.min_epsilon
-    decrement = config.epsilon_decrement if decrement is None else decrement
-
-    return max(min_epsilon, max_epsilon - (current_cycle - 1) * decrement)
-
-
-def get_random_bot_epsilon(current_cycle):
-    return 1
-
-
-def get_expert_epsilon(current_cycle):
-    return 1
 
 
 def get_pretty_time(duration, num_digits=2):
@@ -97,13 +50,13 @@ def get_pretty_time(duration, num_digits=2):
 def save_config(config, path=None):
     path = 'latest' if path is None else path
     os.makedirs('saved_configs', exist_ok=True)
-    with open(os.path.join('saved_configs', path + '.pkl'), 'wb') as f:
+    with open(os.path.join(cfg.config_folder, path + '.pkl'), 'wb') as f:
         pkl.dump(config, f)
 
 
 def get_config(path=None):
     path = 'latest' if path is None else path
-    with open(os.path.join('saved_configs', path + '.pkl'), 'rb') as f:
+    with open(os.path.join(cfg.config_folder, path + '.pkl'), 'rb') as f:
         config = pkl.load(f)
     return config
 
@@ -181,3 +134,59 @@ def overwrite_cfg(exp, config):
             else:
                 raise Exception(f'Bad column title in file: {key}')
     return config
+
+
+def clear_run(run_id):
+    """Clears all saved information about a specified run_id"""
+    # Logs
+    log_path = os.path.join(cfg.log_folder, run_id + '.log')
+    if os.path.exists(log_path):
+        os.remove(log_path)
+        print(f'Logs for {run_id} cleared.')
+
+    # Model Checkpoints
+    model_checkpoint_path = os.path.join(cfg.checkpoint_folder, run_id)
+    if os.path.exists(model_checkpoint_path):
+        shutil.rmtree(model_checkpoint_path)
+        print(f'Model checkpoints for {run_id} cleared.')
+
+    # Saved models
+    saved_model_path = os.path.join(cfg.final_models_folder, run_id + '.pkl')
+    if os.path.exists(saved_model_path):
+        os.remove(saved_model_path)
+        print(f'Saved model for {run_id} cleared.')
+
+    # Saved configs
+    saved_config_path = os.path.join(cfg.config_folder, run_id + '.pkl')
+    if os.path.exists(saved_config_path):
+        os.remove(saved_config_path)
+        print(f'Config for {run_id} cleared.')
+
+    # DB entries
+    db.clear_run(run_id=run_id)
+    print(f'DB entries for {run_id} cleared (if they existed).')
+
+
+def get_reward(player, state_1, state_2, winner=None):
+    """
+    Reward is calculated as follows:
+        1. Score component: Change in net advantage between states
+        2. Game Over component: If game is over, +50 if win and -50 if lose
+
+    :param player: Player object for which to calculate reward
+    :param state_1: Initial state
+    :param state_2: Next state
+    :param winner: If None, game is not over. If not None, specifies the player object who won the entire game
+    :return: Reward
+    """
+
+    score_component = state_2.get_player_state(player)[24] - state_1.get_player_state(player)[24]  # Score differential is 24th index (immediately after hand)
+    game_component = 0
+
+    if winner is not None:
+        if player == winner:
+            game_component = 50
+        else:  # Lose
+            game_component = -50
+
+    return score_component + game_component

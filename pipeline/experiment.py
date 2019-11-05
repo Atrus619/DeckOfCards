@@ -1,40 +1,42 @@
-# Loop through number of training cycles
+# Loop through number of training cycles - COMPLETE
 # Loop through number of episodes per cycle - COMPLETE
-# Set up game
-# Play game
-# Record along the way
+# Set up game - COMPLETE
+# Play game - COMPLETE
+# Record along the way - COMPLETE
 # Collect relevant experience for training - COMPLETE
 # Train DQN or other model - COMPLETE
-# Logging/Visualization/Track Progress/Benchmark
+# Logging/Visualization/Track Progress/Benchmark - COMPLETE
 
 # Stretch goals:
 # Parallelize
 # Add complexity slowly
 # Make interface more robust
 # Add debug method to jump into game
-# Mess with reward function
-# Mess with config
+# Mess with reward function - COMPLETE
+# Mess with config - COMPLETE
 # Try other algorithms!!!
 
 # Things to log/etc.
 # Average reward - COMPLETE
 # Win rate versus randombot - COMPLETE
 # Win rate versus older version of bot - COMPLETE
-# NN weights/histograms/loss
+# NN weights/histograms/loss - COMPLETE
 # Overall win-rate - COMPLETE
 
-from config import Config as cfg
-from util.util import get_epsilon_constant_decrement, get_epsilon_linear_anneal
 import util.util as util
 from datasets.GameHistory import GameHistory
 from models.DQN import DQN
 from pinochle.Game import Game
+from classes.Epsilon import Epsilon
+from classes.Agent import Agent
 from util import db
 from pipeline import benchmark
 from torch.utils.data import DataLoader
 import logging
 import time
 from util.Constants import Constants as cs
+from pinochle.scripted_bots.RandomBot import RandomBot
+from pinochle.scripted_bots.ExpertPolicy import ExpertPolicy
 import os
 
 
@@ -46,13 +48,11 @@ def run_full_experiment(config):
     # Define players
     model_1 = DQN(**config.DQN_params)
     model_2 = model_1.copy()
-    
-    player_list = util.init_players(model_1=model_1,
-                                    name_1=config.bot_1_name,
-                                    model_2=model_2,
-                                    name_2=config.bot_2_name,
-                                    epsilon_func=globals()[config.epsilon_func])  # Importing string function name from config intentionally
-    
+    epsilon = Epsilon(epsilon_func=config.epsilon_func, max_epsilon=config.max_epsilon, min_epsilon=config.min_epsilon,
+                      eval_epsilon=config.eval_epsilon, num_cycles=config.num_cycles, decrement=config.epsilon_decrement)
+
+    player_list = [Agent(name=config.bot_1_name, model=model_1, epsilon=epsilon), Agent(name=config.bot_2_name, model=model_2, epsilon=epsilon)]
+
     player_1_winrate = []
     previous_experience_id = 0
     
@@ -67,6 +67,7 @@ def run_full_experiment(config):
     
         # For each episode, play through episode and insert each state/action pair into the database
         logger.info('Beginning cycle: ' + str(i) + ' / ' + str(config.num_cycles) + '\tCumulative Time Elapsed: ' + util.get_pretty_time(time.time() - start_time))
+        logger.info(f'Current Epsilon: {epsilon.get_epsilon(current_cycle=i):.3f}')
         cycle_start_time = time.time()
     
         for j in range(config.episodes_per_cycle):
@@ -95,7 +96,7 @@ def run_full_experiment(config):
         if i % config.player_2_update_freq == 0:
             logger.info(cs.DIVIDER)
             logger.info('Setting model 2 equal to model 1...')
-            model_2 = model_1.copy()
+            player_list[1].set_model(model=model_1.copy())
     
         # Benchmark
         if i % config.benchmark_freq == 0:
@@ -107,28 +108,30 @@ def run_full_experiment(config):
             player_1_winrate.append(cycle_win_rate)
     
             # Play against random bot and measure win rate
-            random_win_rate = benchmark.random_bot_test(agent=player_list[0])
+            random_win_rate = benchmark.benchmark_test(model=model_1, benchmark_model=RandomBot(), benchmark_bot_name=config.random_bot_name,
+                                                       run_id=config.run_id if config.log_random_benchmark else None)
             logger.info(f'Winrate vs. Random Bot: {random_win_rate * 100:.1f}%')
+
+            # Play against expert policy bot and measure win rate
+            expert_policy_win_rate = benchmark.benchmark_test(model=model_1, benchmark_model=ExpertPolicy(), benchmark_bot_name=config.expert_policy_bot_name,
+                                                              run_id=config.run_id if config.log_expert_policy_benchmark else None)
+            logger.info(f'Winrate vs. Expert Policy: {expert_policy_win_rate * 100:.1f}%')
     
             # Collect average reward from database
             average_reward = benchmark.get_average_reward(config.run_id, previous_experience_id, config.bot_1_name)
-            db.insert_metrics(config.run_id, cycle_win_rate, random_win_rate, average_reward)
+            db.insert_metrics(run_id=config.run_id, win_rate=cycle_win_rate, win_rate_random=random_win_rate, win_rate_expert_policy=expert_policy_win_rate,
+                              average_reward=average_reward)
     
             previous_experience_id = db.get_max_id(config.run_id)
 
         # Checkpoint
         if config.checkpoint_freq is not None and i % config.checkpoint_freq == 0:
+            logger.info(cs.DIVIDER)
             logger.info('Model checkpoint reached. Saving checkpoint...')
             model_1.save(folder=os.path.join(config.checkpoint_folder, config.run_id), title=util.get_checkpoint_model_name(cycle=i))
-            logger.info(cs.DIVIDER)
 
         logger.info('Cycle complete.\tTotal Cycle Time: ' + util.get_pretty_time(time.time() - cycle_start_time))
         logger.info(cs.DIVIDER)
 
     logging.info('Training complete.\tTotal Run Time: ' + util.get_pretty_time(time.time() - start_time) + '\tSaving model and exiting...')
     model_1.save(title=config.run_id)
-
-
-if __name__ == '__main__':
-    cfg.run_id = util.generate_run_id()
-    run_full_experiment(config=cfg)

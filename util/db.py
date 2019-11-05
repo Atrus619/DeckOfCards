@@ -13,11 +13,12 @@ def open_connection():
     return connection
 
 
-def insert_exp(cursor, agent_id, run_id, vector, reward, action):
+def insert_exp(cursor, agent_id, run_id, vector, action):
+    """Updates db with information about current state and action"""
     cursor.execute(
-            "INSERT INTO cards.experience \
-            (ins_ts, agent_id, run_id, vector, reward, action) \
-            VALUES (now(), '" + str(agent_id) + "', '" + str(run_id) + "', '" + str(vector) + "', " + str(reward) + ", '" + str(action) + "') \
+            f"INSERT INTO cards.experience \
+            (ins_ts, agent_id, run_id, vector, action) \
+            VALUES (now(), '{agent_id}', '{run_id}', '{vector}', '{action}') \
             RETURNING id;"
             )
 
@@ -25,22 +26,22 @@ def insert_exp(cursor, agent_id, run_id, vector, reward, action):
     return result[0]
 
 
-def update_exp(cursor, next_vector, row_id):
+def update_exp(cursor, next_vector, reward, row_id):
+    """Re-updates db with information about next_state and resulting reward"""
     cursor.execute(
-            "UPDATE cards.experience \
-            SET ins_ts = now(), next_vector =  '" + str(next_vector) + "' \
-            WHERE id = '" + str(row_id) + "';"
+            f"UPDATE cards.experience \
+            SET ins_ts = now(), next_vector = '{next_vector}', reward = '{reward}' \
+            WHERE id = '{row_id}';"
             )
 
 
-def insert_metrics(run_id, win_rate, win_rate_random, average_reward):
+def insert_metrics(run_id, win_rate, win_rate_random, win_rate_expert_policy, average_reward):
     with open_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
-                "INSERT INTO cards.metrics \
-                (run_id, win_rate, win_rate_random, average_reward) \
-                VALUES ('" + str(run_id) + "', '" + str(win_rate) + "', '" + str(win_rate_random) + "', "
-                "'" + str(average_reward) + "');"
+                f"INSERT INTO cards.metrics \
+                (run_id, win_rate, win_rate_random, win_rate_expert_policy, average_reward) \
+                VALUES ('{run_id}', '{win_rate}', '{win_rate_random}', '{win_rate_expert_policy}', '{average_reward}');"
             )
 
         conn.commit()
@@ -50,11 +51,11 @@ def get_exp(run_id, buffer):
     with open_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
-                "SELECT vector, action, next_vector, reward FROM \
+                f"SELECT vector, action, next_vector, reward FROM \
                 cards.experience \
-                WHERE run_id = '" + str(run_id) + "' \
+                WHERE run_id = '{run_id}' \
                 ORDER BY ins_ts DESC \
-                LIMIT " + str(buffer) + ";"
+                LIMIT {buffer};"
             )
             result = cursor.fetchall()
 
@@ -66,14 +67,14 @@ def get_metrics(run_id):
     with open_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
-                "SELECT win_rate, win_rate_random, average_reward FROM \
+                f"SELECT win_rate, win_rate_random, win_rate_expert_policy, average_reward FROM \
                 cards.metrics \
-                WHERE run_id = '" + str(run_id) + "' \
+                WHERE run_id = '{run_id}' \
                 ORDER BY id ASC ;"
             )
             result = cursor.fetchall()
 
-    df = pd.DataFrame(result, columns=['win_rate', 'win_rate_random', 'average_reward'])
+    df = pd.DataFrame(result, columns=['win_rate', 'win_rate_random', 'win_rate_expert_policy', 'average_reward'])
     return df
 
 
@@ -81,9 +82,9 @@ def get_max_id(run_id):
     with open_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
-                "SELECT max(id)  \
+                f"SELECT max(id)  \
                 FROM cards.experience \
-                WHERE run_id = '" + str(run_id) + "';"
+                WHERE run_id = '{run_id}';"
             )
             result = cursor.fetchone()
 
@@ -106,11 +107,11 @@ def get_rewards_by_id(run_id, previous_experience_id, agent_id):
     with open_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
-                "SELECT reward  \
+                f"SELECT reward  \
                 FROM cards.experience \
-                WHERE run_id = '" + str(run_id) + "' \
-                and id > " + str(previous_experience_id) + " \
-                and agent_id = '" + str(agent_id) + "' ;"
+                WHERE run_id = '{run_id}' \
+                and id > {previous_experience_id} \
+                and agent_id = '{agent_id}' ;"
             )
             result = cursor.fetchall()
 
@@ -122,12 +123,12 @@ def clear_run(run_id):
     with open_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
-                "DELETE FROM cards.experience \
-                WHERE run_id = '" + str(run_id) + "';"
+                f"DELETE FROM cards.experience \
+                WHERE run_id = '{run_id}';"
             )
             cursor.execute(
-                "DELETE FROM cards.metrics \
-                WHERE run_id = '" + str(run_id) + "';"
+                f"DELETE FROM cards.metrics \
+                WHERE run_id = '{run_id}';"
             )
 
         conn.commit()

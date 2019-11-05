@@ -4,10 +4,10 @@ import util.db as db
 import matplotlib.pyplot as plt
 import numpy as np
 import util.util as util
-from util.util import get_epsilon_constant_decrement, get_epsilon_linear_anneal
+from classes.Epsilon import Epsilon
 
 
-def plot_diagnostic_plots(run_id):
+def plot_diagnostic_plots(run_id, alpha=0.5):
     df = db.get_metrics(run_id=run_id)
     config = util.get_config(path=run_id)
 
@@ -16,35 +16,46 @@ def plot_diagnostic_plots(run_id):
     x_axis = np.linspace(start=config.benchmark_freq, stop=total_length, num=num_cycles)
     x_line_coord = np.linspace(config.benchmark_freq, total_length, total_length)
 
-    f, axes = plt.subplots(4, 1, figsize=(12, 12), sharex=True)
+    epsilon = Epsilon(epsilon_func=config.epsilon_func, max_epsilon=config.max_epsilon, min_epsilon=config.min_epsilon,
+                      eval_epsilon=config.eval_epsilon, num_cycles=config.num_cycles, decrement=config.epsilon_decrement)
+    epsilon_func = epsilon.get_epsilon
+    vfunc = np.vectorize(epsilon_func)
+    epsilon_plot_ys = vfunc(x_line_coord)
+
+    f, axes = plt.subplots(5, 1, figsize=(12, 12), sharex=True)
 
     axes[0].title.set_text('Win Rate vs. Model 2')
     axes[0].plot(x_axis, df.win_rate)
     axes[0].set_ylabel('Win Rate (%)')
-    axes[0].plot(x_line_coord, np.full(total_length, 0.5), linestyle='dashed', color='r')
+    axes[0].plot(x_line_coord, np.full(total_length, 0.5), linestyle='dashed', color='r', alpha=alpha)
+    axes[0].plot(x_line_coord, np.full(total_length, 1.0), linestyle='dashed', color='g', alpha=alpha)
     for i in range(config.benchmark_freq, total_length):
         if i % config.player_2_update_freq == 0:
-            axes[0].axvline(x=i, linestyle='dashed', color='g')
+            axes[0].axvline(x=i, linestyle='dashed', color='g', alpha=alpha)
 
     axes[1].title.set_text('Win Rate vs. RandomBot')
     axes[1].plot(x_axis, df.win_rate_random)
     axes[1].set_ylabel('Win Rate (%)')
-    axes[1].plot(x_line_coord, np.full(total_length, 0.5), linestyle='dashed', color='r')
+    axes[1].plot(x_line_coord, np.full(total_length, 0.5), linestyle='dashed', color='r', alpha=alpha)
+    axes[1].plot(x_line_coord, np.full(total_length, 1.0), linestyle='dashed', color='g', alpha=alpha)
 
-    axes[2].title.set_text('Avg Reward')
-    axes[2].plot(x_axis, df.average_reward)
-    axes[2].set_ylabel('Reward')
-    axes[2].plot(x_line_coord, np.full(total_length, 0.0), linestyle='dashed', color='r')
+    axes[2].title.set_text('Win Rate vs. Expert Policy')
+    axes[2].plot(x_axis, df.win_rate_expert_policy)
+    axes[2].set_ylabel('Win Rate (%)')
+    axes[2].plot(x_line_coord, np.full(total_length, 0.5), linestyle='dashed', color='r', alpha=alpha)
+    axes[2].plot(x_line_coord, np.full(total_length, 1.0), linestyle='dashed', color='g', alpha=alpha)
 
-    epsilon_func = globals()[config.epsilon_func]
-    vfunc = np.vectorize(epsilon_func)
-    epsilon_plot_ys = vfunc(x_line_coord)
-    axes[3].title.set_text('Epsilon Schedule')
-    axes[3].plot(x_line_coord, epsilon_plot_ys)
-    axes[3].plot(x_line_coord, np.full(total_length, 1.0), linestyle='dashed', color='g')
-    axes[3].plot(x_line_coord, np.full(total_length, 0.0), linestyle='dashed', color='r')
-    axes[3].set_ylabel('Epsilon')
-    axes[3].set_xlabel('Cycle')
+    axes[3].title.set_text('Avg Reward')
+    axes[3].plot(x_axis, df.average_reward)
+    axes[3].set_ylabel('Reward')
+    axes[3].plot(x_line_coord, np.full(total_length, 0.0), linestyle='dashed', color='r', alpha=alpha)
+
+    axes[4].title.set_text('Epsilon Schedule')
+    axes[4].plot(x_line_coord, epsilon_plot_ys)
+    axes[4].plot(x_line_coord, np.full(total_length, 1.0), linestyle='dashed', color='g', alpha=alpha)
+    axes[4].plot(x_line_coord, np.full(total_length, 0.0), linestyle='dashed', color='r', alpha=alpha)
+    axes[4].set_ylabel('Epsilon')
+    axes[4].set_xlabel('Cycle')
 
     st = f.suptitle('Training Diagnostic Plots', fontsize='x-large')
     f.tight_layout()
@@ -52,8 +63,10 @@ def plot_diagnostic_plots(run_id):
     f.subplots_adjust(top=0.9)
 
 
-def plot_model_training_plots(run_id):
+def plot_model_training_plots(run_id, alpha=0.5):
     model = util.get_model_checkpoint(run_id=run_id)
+    config = util.get_config(path=run_id)
+
     f, axes = plt.subplots(2, 1, figsize=(12, 12), sharex=True)
 
     axes[0].title.set_text('Avg Loss by Epoch')
@@ -61,10 +74,16 @@ def plot_model_training_plots(run_id):
     axes[0].set_xlabel('Epoch')
     axes[0].set_ylabel('Loss')
 
+    for i in range(config.epochs_per_cycle, model.policy_net.epoch, config.epochs_per_cycle):
+        axes[0].axvline(x=i, linestyle='dashed', color='g', alpha=alpha)
+
     axes[1].title.set_text('Estimated Q by Epoch')
     axes[1].plot(model.policy_net.Qs)
     axes[1].set_xlabel('Epoch')
     axes[1].set_ylabel('Q')
+
+    for i in range(config.epochs_per_cycle, model.policy_net.epoch, config.epochs_per_cycle):
+        axes[1].axvline(x=i, linestyle='dashed', color='g', alpha=alpha)
 
     st = f.suptitle('Model Training Diagnostic Plots', fontsize='x-large')
     f.tight_layout()
@@ -72,8 +91,9 @@ def plot_model_training_plots(run_id):
     f.subplots_adjust(top=0.9)
 
 
-def plot_model_layer_scatters(run_id, figsize=(20, 10)):
+def plot_model_layer_scatters(run_id, figsize=(20, 10), alpha=0.5):
     model = util.get_model_checkpoint(run_id=run_id)
+    config = util.get_config(path=run_id)
     net = model.policy_net
 
     assert net.epoch > 0, "Model needs to be trained first"
@@ -94,6 +114,11 @@ def plot_model_layer_scatters(run_id, figsize=(20, 10)):
         axes[i, 1].plot(net.gnorm_history[layer]['weight'])
         axes[i, 2].plot(net.wnorm_history[layer]['bias'])
         axes[i, 3].plot(net.gnorm_history[layer]['bias'])
+
+    for i, layer in enumerate(net.layer_list):
+        for j in range(4):
+            for k in range(config.epochs_per_cycle, model.policy_net.epoch, config.epochs_per_cycle):
+                axes[i, j].axvline(x=k, linestyle='dashed', color='g', alpha=alpha)
 
     sup = net.name + " Layer Weight and Gradient Norms"
     st = f.suptitle(sup, fontsize='x-large')

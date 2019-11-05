@@ -36,7 +36,7 @@ class DQN:
         # History
         self.loss = []
 
-    def get_legal_action(self, state, game, player, is_hand):
+    def get_legal_action(self, state, player, game, is_hand):
         # Picks the highest output legal action, ignoring illegal actions
         valid_action_mask = state.get_valid_action_mask(player=player, is_hand=is_hand)
         invalid_action_mask = (valid_action_mask == 0).nonzero()
@@ -113,7 +113,7 @@ class DQN:
     def copy(self):
         return deepcopy(self)
 
-    def save(self, folder=cfg.saved_models_folder, title=None):
+    def save(self, folder=cfg.final_models_folder, title=None):
         title = 'latest' if title is None else title
         os.makedirs(folder, exist_ok=True)
         with open(os.path.join(folder, title + '.pkl'), 'wb') as f:

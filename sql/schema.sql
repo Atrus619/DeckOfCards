@@ -13,7 +13,7 @@ CREATE TABLE cards.experience (
     run_id varchar NOT NULL,
     vector varchar NOT NULL,
     next_vector varchar NULL,
-    reward numeric NOT NULL,
+    reward numeric NULL,
     action varchar NULL,
     CONSTRAINT experience_pk PRIMARY KEY (id)
 );
@@ -23,6 +23,7 @@ CREATE TABLE cards.metrics (
 	run_id varchar NOT NULL,
 	win_rate numeric NOT NULL,
 	win_rate_random numeric NOT NULL,
+	win_rate_expert_policy numeric NOT NULL,
 	average_reward numeric NOT NULL,
 	ins_ts timestamp NOT NULL DEFAULT now(),
 	CONSTRAINT win_rate_pk PRIMARY KEY (id)

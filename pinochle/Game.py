@@ -44,7 +44,7 @@ class Game:
         self.meldedCards = {}
         self.discard_pile = Hand()
 
-        self.player_experience_ids = {}
+        self.player_inter_trick_history = {}  # One entry per player, each entry is a tuple containing (prior_state, row_id entry in initial db update)
 
         for player in self.players:
             self.hands[player] = Hand()
@@ -95,6 +95,7 @@ class Game:
         """
         Collecting cards for meld scoring from player who won trick
         :param player: Player we are collecting from
+        :param state: Current state of game
         :param limit: Maximum number of cards that can be collected
         :return: list of MeldTuples and whether the interaction was valid (boolean)
         """
@@ -126,8 +127,6 @@ class Game:
 
             if user_input == 'Y':
                 break
-
-            # TODO: Return here and do something similar to what was done for collect_trick_cards (punishing illegal moves)
 
             source = user_input[0]
             index = int(user_input[1:])
@@ -190,15 +189,17 @@ class Game:
         trick_player_list = [player_1, player_2]
 
         # Collect card for trick from each player based on order
-        card_1 = self.collect_trick_cards(player_1, trick_start_state)
+        card_1 = self.collect_trick_cards(player_1, trick_start_state)  # Collect card from first player based on priority
 
         # Recording the first card that was played
         first_move_state = self.create_state(card_1)
-        if self.players[0] in self.player_experience_ids and self.run_id is not None:
-            sl.update_state(trick_start_state, first_move_state, player_1, player_2,
-                            self.player_experience_ids[player_1], self.player_experience_ids[player_2])
 
-        card_2 = self.collect_trick_cards(player_2, first_move_state)
+        if self.players[0] in self.player_inter_trick_history and self.run_id is not None:  # Don't update on first trick of game
+            p1_update_dict = {'player': player_1, 'state_1': self.player_inter_trick_history[player_1][0], 'state_2': trick_start_state, 'row_id': self.player_inter_trick_history[player_1][1]}
+            p2_update_dict = {'player': player_2, 'state_1': self.player_inter_trick_history[player_2][0], 'state_2': first_move_state, 'row_id': self.player_inter_trick_history[player_2][1]}
+            sl.update_state(p1=p1_update_dict, p2=p2_update_dict)
+
+        card_2 = self.collect_trick_cards(player_2, first_move_state)  # Collect card from second player based on priority
 
         # TODO: make all players see all cards played
         print_divider()
@@ -249,17 +250,12 @@ class Game:
 
         self.discard_pile.add_cards([card_1, card_2])
 
-        # log states and actions
-        # row_id_1 always corresponds to the experience row for player 0 in game (NOT TRICK)
-        # same for row_id_2
+        # log states and actions, player order = TRICK ORDER
         if self.run_id is not None:
-            row_id_1, row_id_2 = sl.log_state(trick_start_state, first_move_state, meld_state, card_1, card_2,
-                                              mt_list, trick_score, meld_score, winner, self.players[0],
-                                              self.players[1],
-                                              self.run_id)
-
-            self.player_experience_ids[self.players[0]] = row_id_1
-            self.player_experience_ids[self.players[1]] = row_id_2
+            p1_dict = {'player': player_1, 'state': trick_start_state, 'card': card_1}
+            p2_dict = {'player': player_2, 'state': first_move_state, 'card': card_2}
+            meld_dict = {'player': winner, 'state': meld_state, 'mt_list': mt_list}
+            self.player_inter_trick_history[player_1], self.player_inter_trick_history[player_2] = sl.log_state(p1=p1_dict, p2=p2_dict, meld=meld_dict, run_id=self.run_id)
 
         self.scores[winner].append(self.scores[winner][-1] + total_score)
         self.scores[loser].append(self.scores[loser][-1])
@@ -275,12 +271,18 @@ class Game:
         while len(self.deck) > 0:
             self.play_trick()
 
-        if self.run_id is not None:
-            sl.set_terminal_state(self.player_experience_ids[self.players[0]],
-                                  self.player_experience_ids[self.players[1]])
-
         final_scores = [self.scores[player][-1] for player in self.players]
         winner_index = np.argmax(final_scores)
+
+        if self.run_id is not None:
+            # GAME ORDER (because it doesn't matter here)
+            end_game_state = self.create_state()
+            p1_update_dict = {'player': self.players[0], 'state_1': self.player_inter_trick_history[self.players[0]][0], 'state_2': end_game_state,
+                              'row_id': self.player_inter_trick_history[self.players[0]][1]}
+            p2_update_dict = {'player': self.players[1], 'state_1': self.player_inter_trick_history[self.players[1]][0], 'state_2': end_game_state,
+                              'row_id': self.player_inter_trick_history[self.players[1]][1]}
+            sl.update_state(p1=p1_update_dict, p2=p2_update_dict, winner=self.players[winner_index])
+
         print_divider()
         logging.debug("Winner: " + str(self.players[winner_index]) + "\tScore: " + str(final_scores[winner_index]))
         logging.debug(

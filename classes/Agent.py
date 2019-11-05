@@ -5,11 +5,11 @@ from pinochle.scripted_bots.RandomBot import RandomBot
 
 
 class Agent(Player):
-    def __init__(self, name, model, epsilon_func):
+    def __init__(self, name, model, epsilon):
         super().__init__(name)
         self.model = model
         self.one_hot_template = vs.PINOCHLE_ONE_HOT_VECTOR
-        self.epsilon_func = epsilon_func
+        self.epsilon = epsilon
         self.random_bot = RandomBot()
 
     def get_action(self, state, game, is_hand, current_cycle):
@@ -21,9 +21,9 @@ class Agent(Player):
         :param current_cycle: Current cycle in training process, used to determine value of epsilon
         :return: Index of action corresponding to state.one_hot_vector of cards
         """
-        epsilon = self.epsilon_func(current_cycle=current_cycle)
+        epsilon = self.epsilon.get_epsilon(current_cycle=current_cycle)
         if random.random() > epsilon:
-            return self.model.get_legal_action(state=state, game=game, player=self, is_hand=is_hand) if is_hand else None  # TODO: Implement meld later
+            return self.model.get_legal_action(state=state, player=self, game=game, is_hand=is_hand) if is_hand else None  # TODO: Implement meld later
         else:
             return self.random_bot.get_legal_action(state=state, player=self)
 
@@ -45,3 +45,6 @@ class Agent(Player):
         for card in game.hands[self]:
             if selected_card == card:
                 return leading_char + str(game.hands[self].cards.index(card))
+
+    def set_model(self, model):
+        self.model = model

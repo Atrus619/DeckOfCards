@@ -20,6 +20,7 @@ class State:
         self.game = game
         self.one_hot_template = vs.PINOCHLE_ONE_HOT_VECTOR
 
+        scores_vector = np.array((self.game.scores[self.game.players[0]][-1], self.game.scores[self.game.players[1]][-1]))
         player1_hand_vector = vb.build_hand_vector(self.game.hands[self.game.players[0]])
         player2_hand_vector = vb.build_hand_vector(self.game.hands[self.game.players[1]])
         discard_vector = vb.build_hand_vector(self.game.discard_pile)
@@ -28,9 +29,8 @@ class State:
 
         """
         ALWAYS HAVE PLAYER 1 AND PLAYER 2 HAND AT THE BEGINNING OF THE STATE
-        BAD SHIT OTHERWISE
         """
-        self.global_state = np.concatenate((player1_hand_vector, player2_hand_vector, trump_vector, discard_vector, played_card_vector), axis=0)
+        self.global_state = np.concatenate((scores_vector, player1_hand_vector, player2_hand_vector, trump_vector, discard_vector, played_card_vector), axis=0)
 
     def convert_to_human_readable_format(self, player):
         print_divider()
@@ -55,10 +55,11 @@ class State:
         """
         player_index = self.game.players.index(player)
 
-        player_hand = self.global_state[player_index * len(self.one_hot_template):(player_index + 1) * len(self.one_hot_template)]
-        global_info = self.global_state[2 * len(self.one_hot_template):]
+        score_info = np.array((self.global_state[player_index] - self.global_state[1 - player_index])).reshape(-1)
+        player_hand = self.global_state[2 + player_index * len(self.one_hot_template):2 + (player_index + 1) * len(self.one_hot_template)]
+        global_info = self.global_state[2 + 2 * len(self.one_hot_template):]
 
-        return np.concatenate((player_hand, global_info), axis=0)
+        return np.concatenate((player_hand, score_info, global_info), axis=0)
 
     def get_player_state_as_tensor(self, player, device=None):
         arr = self.get_player_state(player)
