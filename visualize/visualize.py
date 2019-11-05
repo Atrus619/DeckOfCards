@@ -168,18 +168,31 @@ def plot_model_layer_hists(run_id, epoch=None, figsize=(20, 10)):
     f.subplots_adjust(top=0.9)
 
 
-def compare_final_random_bot_winrates(experiment_file, avg_latest_n=3):
+def compare_final_benchmark_winrates(experiment_file, avg_latest_n=3, alpha=0.5):
     experiments = util.get_experiment_file(experiment_file)
-    winrates = []
+    random_bot_winrates = []
+    expert_policy_bot_winrates = []
     run_ids = []
     for index, experiment in experiments.iterrows():
-        winrates.append(db.get_metrics(run_id=experiment.run_id).win_rate_random.iloc[-1 - avg_latest_n:-1].mean())
+        current_metrics = db.get_metrics(run_id=experiment.run_id)
+        random_bot_winrates.append(current_metrics.win_rate_random.iloc[-1 - avg_latest_n:-1].mean())
+        expert_policy_bot_winrates.append(current_metrics.win_rate_expert_policy.iloc[-1 - avg_latest_n:-1].mean())
         run_ids.append(experiment.run_id)
 
-    plt.bar(height=winrates, x=run_ids)
+    f, axes = plt.subplots(2, 1, figsize=(12, 12), sharex=True)
 
-    plt.plot(np.linspace(-0.5, len(run_ids) - 0.5, len(run_ids)), np.full(len(run_ids), 0.5), linestyle='dashed', color='r')
+    axes[0].bar(height=random_bot_winrates, x=run_ids)
+    axes[0].plot(np.linspace(-0.5, len(run_ids) - 0.5, len(run_ids)), np.full(len(run_ids), 0.5), linestyle='dashed', color='r', alpha=alpha)
+    axes[0].title.set_text('RandomBot')
+    axes[0].set_ylabel('Winrate vs. RandomBot (%)')
 
-    plt.xlabel('Run ID', fontweight='bold')
-    plt.ylabel('Winrate vs. RandomBot (%)', fontweight='bold')
-    plt.title(f'Avg Latest {avg_latest_n} Benchmarked Winrates Vs. RandomBot by Run ID', fontweight='bold')
+    axes[1].bar(height=expert_policy_bot_winrates, x=run_ids)
+    axes[1].plot(np.linspace(-0.5, len(run_ids) - 0.5, len(run_ids)), np.full(len(run_ids), 0.5), linestyle='dashed', color='r', alpha=alpha)
+    axes[1].title.set_text('ExpertPolicy')
+    axes[1].set_ylabel('Winrate vs. ExpertPolicy (%)')
+    axes[1].set_xlabel('Run ID')
+
+    st = f.suptitle(f'Avg Latest {avg_latest_n} Benchmarked Winrates by Run ID', fontsize='x-large')
+    f.tight_layout()
+    st.set_y(0.96)
+    f.subplots_adjust(top=0.9)

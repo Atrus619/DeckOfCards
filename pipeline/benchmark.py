@@ -53,6 +53,6 @@ def get_average_reward(run_id, previous_experience_id, agent_id, opponent_id):
     logging.debug(df.sum())
     average = df.sum() / (cfg.benchmark_freq * cfg.episodes_per_cycle)
 
-    logging.info("Average reward since last benchmark: " + str(round(average.reward, 2)))
+    logging.info("Average reward since last benchmark from self-play: " + str(round(average.reward, 2)))
 
     return average.reward

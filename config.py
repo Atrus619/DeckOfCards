@@ -12,7 +12,7 @@ class Config:
     player_2_update_freq = 10
     game = 'pinochle'
     run_id = 'TEST'
-    logging_level = logging.DEBUG
+    logging_level = logging.INFO
     store_history = True  # Whether to store gradients & friends in the neural network class
     checkpoint_freq = 5  # Frequency (in cycles) to checkpoint model (save to checkpoints folder)
 
