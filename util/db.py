@@ -13,12 +13,12 @@ def open_connection():
     return connection
 
 
-def insert_exp(cursor, agent_id, run_id, vector, action):
+def insert_exp(cursor, agent_id, opponent_id, run_id, vector, action):
     """Updates db with information about current state and action"""
     cursor.execute(
             f"INSERT INTO cards.experience \
-            (ins_ts, agent_id, run_id, vector, action) \
-            VALUES (now(), '{agent_id}', '{run_id}', '{vector}', '{action}') \
+            (ins_ts, agent_id, opponent_id, run_id, vector, action) \
+            VALUES (now(), '{agent_id}', '{opponent_id}', '{run_id}', '{vector}', '{action}') \
             RETURNING id;"
             )
 
@@ -103,7 +103,7 @@ def get_global_max_id():
     return result[0]
 
 
-def get_rewards_by_id(run_id, previous_experience_id, agent_id):
+def get_rewards_by_id(run_id, previous_experience_id, agent_id, opponent_id):
     with open_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
@@ -111,7 +111,8 @@ def get_rewards_by_id(run_id, previous_experience_id, agent_id):
                 FROM cards.experience \
                 WHERE run_id = '{run_id}' \
                 and id > {previous_experience_id} \
-                and agent_id = '{agent_id}' ;"
+                and agent_id = '{agent_id}' \
+                and opponent_id = '{opponent_id}';"
             )
             result = cursor.fetchall()
 

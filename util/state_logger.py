@@ -35,10 +35,12 @@ def log_state(p1, p2, meld, run_id):
     with db.open_connection() as conn:
         with conn.cursor() as cursor:
             # Player 1's trick play
-            row_id_1 = db.insert_exp(cursor=cursor, agent_id=p1['player'].name, run_id=run_id, vector=player_1_state_vector, action=player_1_action_vector)
+            row_id_1 = db.insert_exp(cursor=cursor, agent_id=p1['player'].name, opponent_id=p2['player'].name, run_id=run_id, vector=player_1_state_vector,
+                                     action=player_1_action_vector)
 
             # Player 2's trick play
-            row_id_2 = db.insert_exp(cursor=cursor, agent_id=p2['player'].name, run_id=run_id, vector=player_2_state_vector, action=player_2_action_vector)
+            row_id_2 = db.insert_exp(cursor=cursor, agent_id=p2['player'].name, opponent_id=p1['player'].name, run_id=run_id, vector=player_2_state_vector,
+                                     action=player_2_action_vector)
 
             # Trick winner's meld play, commented out to simplify process
             # db.insert_exp(cursor, winner.name, run_id, winner_state_vector, winner_action)

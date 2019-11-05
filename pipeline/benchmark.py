@@ -47,8 +47,8 @@ def human_test(model):
     logging.getLogger().setLevel(cfg.logging_level)
 
 
-def get_average_reward(run_id, previous_experience_id, agent_id):
-    df = db.get_rewards_by_id(run_id, previous_experience_id, agent_id)
+def get_average_reward(run_id, previous_experience_id, agent_id, opponent_id):
+    df = db.get_rewards_by_id(run_id=run_id, previous_experience_id=previous_experience_id, agent_id=agent_id, opponent_id=opponent_id)
     logging.debug(cfg.benchmark_freq * cfg.episodes_per_cycle)
     logging.debug(df.sum())
     average = df.sum() / (cfg.benchmark_freq * cfg.episodes_per_cycle)

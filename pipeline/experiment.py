@@ -118,7 +118,8 @@ def run_full_experiment(config):
             logger.info(f'Winrate vs. Expert Policy: {expert_policy_win_rate * 100:.1f}%')
     
             # Collect average reward from database
-            average_reward = benchmark.get_average_reward(config.run_id, previous_experience_id, config.bot_1_name)
+            average_reward = benchmark.get_average_reward(run_id=config.run_id, previous_experience_id=previous_experience_id,
+                                                          agent_id=config.bot_1_name, opponent_id=config.bot_2_name)
             db.insert_metrics(run_id=config.run_id, win_rate=cycle_win_rate, win_rate_random=random_win_rate, win_rate_expert_policy=expert_policy_win_rate,
                               average_reward=average_reward)
     
