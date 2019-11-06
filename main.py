@@ -52,3 +52,5 @@ model_list = [no_gamma, gamma1, gamma2, gamma3, gamma4, gamma5]
 bench.round_robin(model_list, 100)
 
 bench.benchmark_test(gamma4_100, gamma4_200, 'test', 150)
+
+bench.human_test(gamma4_50)

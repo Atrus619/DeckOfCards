@@ -47,15 +47,7 @@ class DQN:
         initial_action_tensor[invalid_action_mask] = -999
 
         if game.human_test:
-            logging.debug(cs.DIVIDER)
-            logging.debug("Action values for each card in agent's hand:")
-            actions = torch.nn.Softmax(dim=0)(initial_action_tensor)
-            for i, action in enumerate(actions):
-                card = player.convert_model_output(output_index=i, game=game, is_hand=True)
-                if card is None:
-                    continue
-                logging.debug("Card: " + str(vs.PINOCHLE_ONE_HOT_VECTOR[i]) + "/" + \
-                              card + "\t Action value: {0:.2%}".format(action.item()))
+            self.print_decision_logic(initial_action_tensor=initial_action_tensor, player=player, game=game)
 
         best_valid_action_prob = initial_action_tensor[valid_action_mask.nonzero()].max()
 
@@ -118,3 +110,19 @@ class DQN:
         os.makedirs(folder, exist_ok=True)
         with open(os.path.join(folder, title + '.pkl'), 'wb') as f:
             pkl.dump(self, f)
+
+    @staticmethod
+    def print_decision_logic(initial_action_tensor, player, game):
+        logging.debug(cs.DIVIDER)
+        logging.debug('Decision Logic For Model:')
+        actions = torch.nn.Softmax(dim=0)(initial_action_tensor)
+
+        card_qs = []
+        for i, action in enumerate(actions):
+            card_qs.append((vs.PINOCHLE_ONE_HOT_VECTOR[i], action.item(), player.convert_model_output(output_index=i, game=game, is_hand=True) is not None))
+
+        card_qs = sorted(card_qs, key=lambda tup: tup[1], reverse=True)
+        # card_qs = sorted(card_qs, key=lambda tup: tup[2], reverse=True)
+
+        for card, q, in_hand in card_qs:
+            logging.debug('Card: {:20s}Q-Value: {:.2%}\tPresent in hand: {}'.format(str(card), q, in_hand))
