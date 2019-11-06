@@ -108,13 +108,13 @@ def run_full_experiment(config):
             player_1_winrate.append(cycle_win_rate)
     
             # Play against random bot and measure win rate
-            random_win_rate = benchmark.benchmark_test(model=model_1, benchmark_model=RandomBot(), benchmark_bot_name=config.random_bot_name,
-                                                       run_id=config.run_id if config.log_random_benchmark else None)
+            random_win_rate = benchmark.benchmark_test(primary_model=model_1, benchmark_model=RandomBot(), benchmark_bot_name=config.random_bot_name,
+                                                       num_games=config.random_bot_cycles, run_id=config.run_id if config.log_random_benchmark else None)
             logger.info(f'Winrate vs. Random Bot: {random_win_rate * 100:.1f}%')
 
             # Play against expert policy bot and measure win rate
-            expert_policy_win_rate = benchmark.benchmark_test(model=model_1, benchmark_model=ExpertPolicy(), benchmark_bot_name=config.expert_policy_bot_name,
-                                                              run_id=config.run_id if config.log_expert_policy_benchmark else None)
+            expert_policy_win_rate = benchmark.benchmark_test(primary_model=model_1, benchmark_model=ExpertPolicy(), benchmark_bot_name=config.expert_policy_bot_name,
+                                                              num_games=config.random_bot_cycles, run_id=config.run_id if config.log_expert_policy_benchmark else None)
             logger.info(f'Winrate vs. Expert Policy: {expert_policy_win_rate * 100:.1f}%')
     
             # Collect average reward from database

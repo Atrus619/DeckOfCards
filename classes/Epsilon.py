@@ -1,5 +1,5 @@
 class Epsilon:
-    def __init__(self, epsilon_func, max_epsilon=1.0, min_epsilon=0.05, eval_epsilon=0.0, num_cycles=100, decrement=0.01):
+    def __init__(self, epsilon_func='eval', max_epsilon=1.0, min_epsilon=0.05, eval_epsilon=0.0, num_cycles=100, decrement=0.01):
         self.epsilon_func = epsilon_func
         self.max_epsilon = max_epsilon
         self.min_epsilon = min_epsilon
