@@ -14,6 +14,7 @@ import util.state_logger as sl
 import logging
 from config import Config as cfg
 import pinochle.card_util as cu
+import time
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
@@ -174,6 +175,9 @@ class Game:
         priority: 0 or 1 for index in player list
         :return: index of winner (priority for next trick)
         """
+        print_divider()
+        logging.debug(f'Phase 1\tTrick #{12 - len(self.deck)//2}\t{len(self.deck)} card{"s" if len(self.deck) > 1 else ""} remaining in deck')
+
         trick_start_state = self.create_state()
 
         trick = Trick(self.players, self.trump)
@@ -191,8 +195,17 @@ class Game:
         # Collect card for trick from each player based on order
         card_1 = self.collect_trick_cards(player_1, trick_start_state)  # Collect card from first player based on priority
 
+        if self.human_test:
+            time.sleep(cfg.human_test_pause_length)
+
         # Recording the first card that was played
         first_move_state = self.create_state(card_1)
+
+        if self.human_test:
+            print_divider()
+            bot_state = trick_start_state if self.players[0] == player_1 else first_move_state
+            human_state = trick_start_state if self.players[1] == player_1 else first_move_state
+            logging.debug(self.players[0].model.get_Qs(player=self.players[0], player_state=bot_state, opponent=self.players[1], opponent_state=human_state))
 
         if self.players[0] in self.player_inter_trick_history and self.run_id is not None:  # Don't update on first trick of game
             p1_update_dict = {'player': player_1, 'state_1': self.player_inter_trick_history[player_1][0], 'state_2': trick_start_state, 'row_id': self.player_inter_trick_history[player_1][1]}
@@ -201,16 +214,25 @@ class Game:
 
         card_2 = self.collect_trick_cards(player_2, first_move_state)  # Collect card from second player based on priority
 
+        if self.human_test:
+            time.sleep(cfg.human_test_pause_length)
+
         # TODO: make all players see all cards played
         print_divider()
         logging.debug("LETS GET READY TO RUMBLE!!!!!!!!!!!!!!!!!!!!!!!")
         logging.debug("Card 1: " + str(card_1))
         logging.debug("Card 2: " + str(card_2))
 
+        if self.human_test:
+            time.sleep(cfg.human_test_pause_length)
+
         # Determine winner of trick based on collected cards
         result = cu.compare_cards(self.trump, card_1, card_2)
         print_divider()
         logging.debug("VICTOR : " + str(player_1.name if result == 0 else player_2.name))
+
+        if self.human_test:
+            time.sleep(cfg.human_test_pause_length)
 
         # Separate winner and loser for scoring, melding, and next hand
         winner = trick_player_list.pop(result)

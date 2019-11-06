@@ -7,6 +7,8 @@ import logging
 import util.util as util
 from classes.Human import Human
 from util.Constants import Constants as cs
+import matplotlib.pyplot as plt
+from collections import OrderedDict
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
@@ -63,10 +65,10 @@ def get_average_reward(run_id, previous_experience_id, agent_id, opponent_id):
     return average.reward
 
 
-def round_robin(model_list, num_games, verbose=True):
+def round_robin(model_list, num_games, verbose=True, plot=True):
     epsilon = Epsilon
 
-    model_wins = {}
+    model_wins = OrderedDict()
     for i, model in enumerate(model_list):
         model_wins[f'Player {i}'] = [0, model]
 
@@ -94,5 +96,13 @@ def round_robin(model_list, num_games, verbose=True):
     if verbose:
         for i, model in enumerate(output):
             print(f'Rank {i+1}: {model[0]} with {model[1][0]} wins')
+
+    if plot:
+        xs = [x[0] for x in model_wins.items()]
+        heights = [x[1][0] for x in model_wins.items()]
+        plt.bar(height=heights, x=xs)
+        plt.title('Round Robin Tournament Results')
+        plt.xlabel('Model')
+        plt.ylabel('Total Number of Wins')
 
     return output

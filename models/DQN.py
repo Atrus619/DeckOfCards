@@ -126,3 +126,16 @@ class DQN:
 
         for card, q, in_hand in card_qs:
             logging.debug('Card: {:20s}Q-Value: {:.2%}\tPresent in hand: {}'.format(str(card), q, in_hand))
+
+    def get_Qs(self, player, player_state, opponent, opponent_state):
+        # Returns the Q-value corresponding to the optimal action for both self and opponent. Can be used to determine who it thinks is winning.
+        self_Q = self.policy_net(player_state.get_player_state_as_tensor(player=player)).max()
+        opponent_Q = self.policy_net(opponent_state.get_player_state_as_tensor(player=opponent)).max()
+        score_compare_string = f'Bot Q: {self_Q:.2f} vs. Your Q: {opponent_Q:.2f}'
+
+        if self_Q > opponent_Q:
+            return 'The bot thinks it is winning...' + score_compare_string
+        elif self_Q < opponent_Q:
+            return 'The bot thinks it is losing...' + score_compare_string
+        else:
+            return 'The bot thinks it is dead even...' + score_compare_string

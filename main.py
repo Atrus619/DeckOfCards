@@ -42,15 +42,11 @@ gamma3 = util.get_model_checkpoint('Small_Gamma3')
 gamma4 = util.get_model_checkpoint('Small_Gamma4')
 gamma5 = util.get_model_checkpoint('Small_Gamma5')
 
-gamma4_50 = util.get_model_checkpoint('Small_Gamma4', 50)
-gamma4_100 = util.get_model_checkpoint('Small_Gamma4', 100)
-gamma4_150 = util.get_model_checkpoint('Small_Gamma4', 150)
-gamma4_200 = util.get_model_checkpoint('Small_Gamma4', 200)
-
-model_list = [gamma4_50, gamma4_100, gamma4_150, gamma4_200]
-model_list = [no_gamma, gamma1, gamma2, gamma3, gamma4, gamma5]
+model_list = []
+for i in range(50, 600, 50):
+    model_list.append(util.get_model_checkpoint('Long_Test', i))
 bench.round_robin(model_list, 100)
 
-bench.benchmark_test(gamma4_100, gamma4_200, 'test', 150)
+latest = util.get_model_checkpoint('Long_Test')
 
-bench.human_test(gamma4_50)
+bench.human_test(latest)

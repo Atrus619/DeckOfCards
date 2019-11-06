@@ -63,7 +63,7 @@ def plot_diagnostic_plots(run_id, alpha=0.5):
     f.subplots_adjust(top=0.9)
 
 
-def plot_model_training_plots(run_id, alpha=0.5):
+def plot_model_training_plots(run_id, alpha=0.0):
     model = util.get_model_checkpoint(run_id=run_id)
     config = util.get_config(path=run_id)
 
@@ -91,7 +91,7 @@ def plot_model_training_plots(run_id, alpha=0.5):
     f.subplots_adjust(top=0.9)
 
 
-def plot_model_layer_scatters(run_id, figsize=(20, 10), alpha=0.5):
+def plot_model_layer_scatters(run_id, figsize=(20, 10), alpha=0.0):
     model = util.get_model_checkpoint(run_id=run_id)
     config = util.get_config(path=run_id)
     net = model.policy_net

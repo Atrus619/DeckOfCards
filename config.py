@@ -71,3 +71,4 @@ class Config:
     checkpoint_folder = 'model_checkpoints'
     experiment_folder = 'experiments'
     config_folder = 'saved_configs'
+    human_test_pause_length = 3
