@@ -1,4 +1,4 @@
-from config import Config as cfg
+from config import Config
 from copy import deepcopy
 from pipeline.experiment import run_full_experiment
 import argparse
@@ -12,5 +12,5 @@ args = parser.parse_args()
 experiments = util.get_experiment_file(file=args.filename)
 
 for i, experiment in experiments.iterrows():
-    config = util.overwrite_cfg(exp=experiment, config=deepcopy(cfg))
+    config = util.overwrite_cfg(exp=experiment, config=Config())
     run_full_experiment(config=config)

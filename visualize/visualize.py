@@ -183,11 +183,13 @@ def compare_final_benchmark_winrates(experiment_file, avg_latest_n=3, alpha=0.5)
 
     axes[0].bar(height=random_bot_winrates, x=run_ids)
     axes[0].plot(np.linspace(-0.5, len(run_ids) - 0.5, len(run_ids)), np.full(len(run_ids), 0.5), linestyle='dashed', color='r', alpha=alpha)
+    axes[0].plot(np.linspace(-0.5, len(run_ids) - 0.5, len(run_ids)), np.full(len(run_ids), 1.0), linestyle='dashed', color='g', alpha=alpha)
     axes[0].title.set_text('RandomBot')
     axes[0].set_ylabel('Winrate vs. RandomBot (%)')
 
     axes[1].bar(height=expert_policy_bot_winrates, x=run_ids)
     axes[1].plot(np.linspace(-0.5, len(run_ids) - 0.5, len(run_ids)), np.full(len(run_ids), 0.5), linestyle='dashed', color='r', alpha=alpha)
+    axes[1].plot(np.linspace(-0.5, len(run_ids) - 0.5, len(run_ids)), np.full(len(run_ids), 1.0), linestyle='dashed', color='g', alpha=alpha)
     axes[1].title.set_text('ExpertPolicy')
     axes[1].set_ylabel('Winrate vs. ExpertPolicy (%)')
     axes[1].set_xlabel('Run ID')

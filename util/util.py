@@ -70,12 +70,8 @@ def setup_file_logger(name, filename='run_log', level=cfg.logging_level):
     formatter = logging.Formatter('%(levelname)s: %(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
     fileHandler.setFormatter(formatter)
 
-    # consoleHandler = logging.StreamHandler()
-    # consoleHandler.setFormatter(formatter)
-
     log_setup.setLevel(level)
     log_setup.addHandler(fileHandler)
-    # log_setup.addHandler(consoleHandler)
 
 
 def convert_np_hist_to_plot(np_hist):
