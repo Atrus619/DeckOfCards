@@ -21,8 +21,8 @@ class ExpertPolicy:
         largest_card = game.hands[player][0]
         smallest_card = game.hands[player][0]
         for i, card in enumerate(game.hands[player][1:]):
-            result_max = cu.compare_cards(game.trump, largest_card, card)
-            result_min = cu.compare_cards(game.trump, smallest_card, card)
+            result_max = cu.compare_cards_non_trick(game.trump, largest_card, card)
+            result_min = cu.compare_cards_non_trick(game.trump, smallest_card, card)
 
             if result_max == 1:
                 largest_card = card
@@ -32,8 +32,8 @@ class ExpertPolicy:
 
             # build list of all cards that will beat an already played card
             if played_card is not None:
-                result_first_card = cu.compare_cards(game.trump, card, played_card)
-                if result_first_card == 0:
+                result_first_card = cu.compare_cards(game.trump, played_card, card)
+                if result_first_card == 1:
                     viable_cards.append(card)
 
         # determine highest point value card that can be played to win the trick when going second

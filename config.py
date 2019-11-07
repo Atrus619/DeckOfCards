@@ -14,7 +14,8 @@ class Config:
     run_id = 'TEST'
     logging_level = logging.INFO
     store_history = True  # Whether to store gradients & friends in the neural network class
-    checkpoint_freq = 5  # Frequency (in cycles) to checkpoint model (save to checkpoints folder)
+    checkpoint_freq = 50  # Frequency (in cycles) to checkpoint model (save to checkpoints folder)
+    win_reward = 100
 
     # Epsilon
     epsilon_func = 'linear_anneal'
@@ -28,7 +29,7 @@ class Config:
     num_actions = 24  # Length of action vector
 
     # Benchmark Parameters
-    benchmark_freq = 5  # How often to benchmark (in number of cycles)
+    benchmark_freq = 25  # How often to benchmark (in number of cycles)
     random_bot_cycles = 30  # Number of games to play vs random bot when benchmarking
     log_random_benchmark = False  # Whether to include random bot benchmarks in training data
     expert_policy_bot_cycles = random_bot_cycles  # Number of games to play vs expert policy bot when benchmarking

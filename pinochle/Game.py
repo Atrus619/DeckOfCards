@@ -201,7 +201,7 @@ class Game:
         # Recording the first card that was played
         first_move_state = self.create_state(card_1)
 
-        if self.human_test:
+        if self.human_test and 'get_Qs' in dir(self.players[0].model):
             print_divider()
             bot_state = trick_start_state if self.players[0] == player_1 else first_move_state
             human_state = trick_start_state if self.players[1] == player_1 else first_move_state

@@ -38,7 +38,9 @@ def human_test(model):
     epsilon = Epsilon()
     player_1 = Agent(name=cfg.bot_1_name, model=model, epsilon=epsilon)
     player_2 = Human("YOU")
-    model.policy_net.eval()
+
+    if 'policy_net' in dir(model):
+        model.policy_net.eval()
 
     # Set logging level to debug
     logging.getLogger().setLevel(logging.DEBUG)
