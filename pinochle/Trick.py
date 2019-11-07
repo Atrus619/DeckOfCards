@@ -2,12 +2,15 @@ from util.Constants import Constants as cs
 
 
 class Trick:
-    def __init__(self, players, trump=None):
+    def __init__(self, players=None, trump=None):
         self.players = players
         self.trump = trump
         self.cards_in_play = {}
         self.card_scores = {}
         self.initialize_card_scores()
+
+        if players is None:
+            return
 
         for player in self.players:
             self.cards_in_play[player] = []
@@ -18,23 +21,11 @@ class Trick:
         self.card_scores[cs.KING] = 4
         self.card_scores[cs.QUEEN] = 3
         self.card_scores[cs.JACK] = 2
+        self.card_scores[cs.NINE] = 0
 
     def add_card(self, card, player):
         self.cards_in_play[player].append(card)
 
     def calculate_trick_score(self, card_1, card_2):
-        if card_1.value not in self.card_scores:
-            card_1_score = 0
-        else:
-            card_1_score = self.card_scores[card_1.value]
-
-        if card_2.value not in self.card_scores:
-            card_2_score = 0
-        else:
-            card_2_score = self.card_scores[card_2.value]
-
-        return card_1_score + card_2_score
-
-
-
+        return self.card_scores[card_1.value] + self.card_scores[card_2.value]
 

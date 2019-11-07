@@ -33,7 +33,7 @@ game = Game(name=cfg.game, players=player_list, run_id='TEST', current_cycle=Non
 game.deal()
 game.play()
 
-bench.benchmark_test(RandomBot(), ExpertPolicy(), 'Leon', 30)
+bench.benchmark_test(RandomBot(), ExpertPolicy(), 30)
 
 no_gamma = util.get_model_checkpoint('No_Gamma')
 gamma1 = util.get_model_checkpoint('Small_Gamma1')

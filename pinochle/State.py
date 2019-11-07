@@ -20,17 +20,17 @@ class State:
         self.game = game
         self.one_hot_template = vs.PINOCHLE_ONE_HOT_VECTOR
 
-        scores_vector = np.array((self.game.scores[self.game.players[0]][-1], self.game.scores[self.game.players[1]][-1]))
-        player1_hand_vector = vb.build_hand_vector(self.game.hands[self.game.players[0]])
-        player2_hand_vector = vb.build_hand_vector(self.game.hands[self.game.players[1]])
-        discard_vector = vb.build_hand_vector(self.game.discard_pile)
-        trump_vector = vb.build_trump_vector(self.game.trump)
-        played_card_vector = vb.build_card_vector(played_card)
+        self.scores_vector = np.array((self.game.scores[self.game.players[0]][-1], self.game.scores[self.game.players[1]][-1]))
+        self.player1_hand_vector = vb.build_hand_vector(self.game.hands[self.game.players[0]])
+        self.player2_hand_vector = vb.build_hand_vector(self.game.hands[self.game.players[1]])
+        self.discard_vector = vb.build_hand_vector(self.game.discard_pile)
+        self.trump_vector = vb.build_trump_vector(self.game.trump)
+        self.played_card_vector = vb.build_card_vector(played_card)
 
         """
         ALWAYS HAVE PLAYER 1 AND PLAYER 2 HAND AT THE BEGINNING OF THE STATE
         """
-        self.global_state = np.concatenate((scores_vector, player1_hand_vector, player2_hand_vector, trump_vector, discard_vector, played_card_vector), axis=0)
+        self.global_state = np.concatenate((self.scores_vector, self.player1_hand_vector, self.player2_hand_vector, self.trump_vector, self.discard_vector, self.played_card_vector), axis=0)
 
     def convert_to_human_readable_format(self, player):
         print_divider()
