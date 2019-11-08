@@ -2,9 +2,11 @@ import util.db as db
 from config import Config as cfg
 import util.vector_builder as vb
 import util.util as util
+import pandas as pd
 
 
-def log_state(p1, p2, meld, run_id):
+# TODO: We may want to consider making this part of game.py
+def log_state(df, p1, p2, meld, run_id):
     """
     PLAYER ORDER: TRICK ORDER
 
@@ -18,7 +20,7 @@ def log_state(p1, p2, meld, run_id):
     2. state: initial state before melding
     3. mt_list: list of cards melded
 
-    This function adds the current state and current action.
+    This function adds the current state and current action to a specified dataframe.
     The next state (St+1) is inserted in update_state()
     Returns a tuple for each player consisting of their initial state and the row_id of the initial entry into the database for future updates.
     """
@@ -32,25 +34,16 @@ def log_state(p1, p2, meld, run_id):
     winner_state_vector = ",".join([str(x) for x in meld['state'].get_player_state(meld['player'])])
     winner_action = ",".join([str(x) for x in vb.build_meld_cards_vector(meld['mt_list'])])
 
-    with db.open_connection() as conn:
-        with conn.cursor() as cursor:
-            # Player 1's trick play
-            row_id_1 = db.insert_exp(cursor=cursor, agent_id=p1['player'].name, opponent_id=p2['player'].name, run_id=run_id, vector=player_1_state_vector,
-                                     action=player_1_action_vector)
+    df2 = pd.DataFrame([[p1['player'].name, p2['player'].name, run_id, player_1_state_vector, player_1_action_vector],
+                        [p2['player'].name, p1['player'].name, run_id, player_2_state_vector, player_2_action_vector]],
+                       columns=['agent_id', 'opponent_id', 'run_id', 'vector', 'action'])
+    df = df.append(df2, sort=False, ignore_index=True)
+    df_len = len(df)
 
-            # Player 2's trick play
-            row_id_2 = db.insert_exp(cursor=cursor, agent_id=p2['player'].name, opponent_id=p1['player'].name, run_id=run_id, vector=player_2_state_vector,
-                                     action=player_2_action_vector)
-
-            # Trick winner's meld play, commented out to simplify process
-            # db.insert_exp(cursor, winner.name, run_id, winner_state_vector, winner_action)
-
-        conn.commit()
-
-    return (p1['state'], row_id_1), (p2['state'], row_id_2)
+    return df, (p1['state'], df_len - 2), (p2['state'], df_len - 1)
 
 
-def update_state(p1, p2, winner=None):
+def update_state(df, p1, p2, winner=None):
     """
     PLAYER ORDER: TRICK ORDER
 
@@ -78,9 +71,5 @@ def update_state(p1, p2, winner=None):
     p1_reward = util.get_reward(player=p1['player'], state_1=p1['state_1'], state_2=p1['state_2'], winner=winner)
     p2_reward = util.get_reward(player=p2['player'], state_1=p2['state_1'], state_2=p2['state_2'], winner=winner)
 
-    with db.open_connection() as conn:
-        with conn.cursor() as cursor:
-            db.update_exp(cursor=cursor, next_vector=p1_next_state_vector, reward=p1_reward, row_id=p1['row_id'])
-            db.update_exp(cursor=cursor, next_vector=p2_next_state_vector, reward=p2_reward, row_id=p2['row_id'])
-
-        conn.commit()
+    df.loc[[p1['row_id'], p2['row_id']], ['next_vector', 'reward']] = [[p1_next_state_vector, p1_reward], [p2_next_state_vector, p2_reward]]
+    return df

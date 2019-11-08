@@ -1,4 +1,5 @@
 import psycopg2 as pg
+import psycopg2.extras as pge
 import pandas as pd
 
 
@@ -11,6 +12,20 @@ def open_connection():
     )
 
     return connection
+
+
+def upload_exp(df):
+    if len(df) > 0:
+        columns = ",".join(df.columns)
+
+        values = "VALUES ({})".format(",".join(["%s" for _ in df.columns]))
+
+        insert_stmt = "INSERT INTO {} ({}) {}".format('cards.experience', columns, values)
+
+        with open_connection() as conn:
+            with conn.cursor() as cursor:
+                pge.execute_batch(cursor, insert_stmt, df.values)
+            conn.commit()
 
 
 def insert_exp(cursor, agent_id, opponent_id, run_id, vector, action):

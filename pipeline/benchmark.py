@@ -29,7 +29,7 @@ def benchmark_test(primary_model, benchmark_model, num_games, benchmark_bot_name
         player_list = [player_1, player_2]
         game = Game(name="pinochle", players=player_list, run_id=run_id, current_cycle=None)
         game.deal()
-        winner_list.append(game.play())
+        winner_list.append(game.play()[0])
 
     return 1 - sum(winner_list) / len(winner_list)
 

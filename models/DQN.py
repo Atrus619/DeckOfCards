@@ -21,7 +21,7 @@ class DQN:
                  num_layers, hidden_units_per_layer, state_size, num_actions,
                  loss_fn=F.smooth_l1_loss, activation_fn=nn.LeakyReLU(0.2), learning_rate=2e-4, beta1=0.5, beta2=0.999, weight_decay=0, device=None):
         # General housekeeping
-        self.device = device if device is not None else torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
+        self.device = device if device is not None else torch.device('cuda:0' if (torch.cuda.is_available()) else 'cpu')
         self.update_target_net_freq = update_target_net_freq
         self.gamma = gamma
         self.grad_clamp = grad_clamp

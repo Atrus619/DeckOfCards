@@ -15,6 +15,8 @@ import logging
 from config import Config as cfg
 import pinochle.card_util as cu
 import time
+import pandas as pd
+import util.db as db
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
@@ -22,6 +24,7 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 # pinochle rules: https://www.pagat.com/marriage/pin2hand.html
 class Game:
     def __init__(self, name, players, run_id="42069", current_cycle=None, human_test=False):
+        # Setting run_id = None results in no records being saved to database
         self.run_id = run_id
         self.name = name.upper()
         self.players = players  # This is a list
@@ -33,6 +36,7 @@ class Game:
         self.meld_util = None
         self.current_cycle = current_cycle  # To determine the current value of epsilon
         self.human_test = human_test
+        self.exp_df = pd.DataFrame(columns=['agent_id', 'opponent_id', 'run_id', 'vector', 'action', 'next_vector', 'reward'])
 
         if self.name == cs.PINOCHLE:
             self.deck = Deck("pinochle")
@@ -210,7 +214,7 @@ class Game:
         if self.players[0] in self.player_inter_trick_history and self.run_id is not None:  # Don't update on first trick of game
             p1_update_dict = {'player': player_1, 'state_1': self.player_inter_trick_history[player_1][0], 'state_2': trick_start_state, 'row_id': self.player_inter_trick_history[player_1][1]}
             p2_update_dict = {'player': player_2, 'state_1': self.player_inter_trick_history[player_2][0], 'state_2': first_move_state, 'row_id': self.player_inter_trick_history[player_2][1]}
-            sl.update_state(p1=p1_update_dict, p2=p2_update_dict)
+            self.exp_df = sl.update_state(df=self.exp_df, p1=p1_update_dict, p2=p2_update_dict)
 
         card_2 = self.collect_trick_cards(player_2, first_move_state)  # Collect card from second player based on priority
 
@@ -277,7 +281,7 @@ class Game:
             p1_dict = {'player': player_1, 'state': trick_start_state, 'card': card_1}
             p2_dict = {'player': player_2, 'state': first_move_state, 'card': card_2}
             meld_dict = {'player': winner, 'state': meld_state, 'mt_list': mt_list}
-            self.player_inter_trick_history[player_1], self.player_inter_trick_history[player_2] = sl.log_state(p1=p1_dict, p2=p2_dict, meld=meld_dict, run_id=self.run_id)
+            self.exp_df, self.player_inter_trick_history[player_1], self.player_inter_trick_history[player_2] = sl.log_state(df=self.exp_df, p1=p1_dict, p2=p2_dict, meld=meld_dict, run_id=self.run_id)
 
         self.scores[winner].append(self.scores[winner][-1] + total_score)
         self.scores[loser].append(self.scores[loser][-1])
@@ -303,10 +307,10 @@ class Game:
                               'row_id': self.player_inter_trick_history[self.players[0]][1]}
             p2_update_dict = {'player': self.players[1], 'state_1': self.player_inter_trick_history[self.players[1]][0], 'state_2': end_game_state,
                               'row_id': self.player_inter_trick_history[self.players[1]][1]}
-            sl.update_state(p1=p1_update_dict, p2=p2_update_dict, winner=self.players[winner_index])
+            self.exp_df = sl.update_state(df=self.exp_df, p1=p1_update_dict, p2=p2_update_dict, winner=self.players[winner_index])
 
         print_divider()
         logging.debug("Winner: " + str(self.players[winner_index]) + "\tScore: " + str(final_scores[winner_index]))
         logging.debug(
             "Loser: " + str(self.players[1 - winner_index]) + "\tScore: " + str(final_scores[1 - winner_index]))
-        return winner_index
+        return winner_index, None if self.run_id is None else self.exp_df

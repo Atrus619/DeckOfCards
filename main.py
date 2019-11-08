@@ -17,8 +17,8 @@ import visualize.visualize as viz
 import pipeline.benchmark as bench
 
 import pipeline.experiment as exp
-
-# exp.run_full_experiment(config=cfg)
+util.clear_run('TEST')
+exp.run_full_experiment(config=cfg)
 #
 # viz.plot_diagnostic_plots('No_Gamma')
 
@@ -51,4 +51,15 @@ bench.round_robin(model_list, 100)
 
 latest = util.get_model_checkpoint('Long_Test')
 
-bench.human_test(ExpertPolicy())
+bench.human_test(util.get_model_checkpoint('gamma75'))
+
+g75 = util.get_model_checkpoint('gamma75', 350)
+g85 = util.get_model_checkpoint('gamma85', 350)
+
+
+model_list = []
+for i in range(50, 400, 50):
+    model_list.append(util.get_model_checkpoint('gamma75', i))
+bench.round_robin(model_list, 100)
+
+model_list = [util.get_model_checkpoint('gamma75', 350), util.get_model_checkpoint('gamma75', 400), util.get_model_checkpoint('gamma85'), ExpertPolicy()]

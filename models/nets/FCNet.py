@@ -2,10 +2,6 @@ import torch.nn as nn
 import torch.optim as optim
 from collections import OrderedDict
 import numpy as np
-import os
-import matplotlib.pyplot as plt
-import util.util as util
-import torch
 
 
 class FCNet(nn.Module):

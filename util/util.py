@@ -181,8 +181,8 @@ def get_reward(player, state_1, state_2, winner=None):
 
     if winner is not None:
         if player == winner:
-            game_component = 50
+            game_component = cfg.win_reward
         else:  # Lose
-            game_component = -50
+            game_component = -1 * cfg.win_reward
 
     return score_component + game_component

@@ -5,7 +5,7 @@ import torch
 
 class Config:
     # Meta-parameters
-    num_cycles = 100
+    num_cycles = 400
     episodes_per_cycle = 50
     experience_replay_buffer = 1e5
     epochs_per_cycle = 20
@@ -18,11 +18,11 @@ class Config:
     win_reward = 100
 
     # Epsilon
-    epsilon_func = 'linear_anneal'
+    epsilon_func = 'constant_decrement'  # Valid options are 'linear_anneal', 'constant_decrement', and 'eval'
     max_epsilon = 1.0
-    min_epsilon = 0.05
+    min_epsilon = 0.1
     eval_epsilon = 0.0
-    epsilon_decrement = 0.01  # for get_epsilon_constant_decrement func
+    epsilon_decrement = 0.005  # for get_epsilon_constant_decrement func
 
     # State-Action
     state_size = 77  # Length of state vector: [hand=24, score_diff_vector=1, trump_vector=4, discard_vector=24, played_card_vector=24]
@@ -38,14 +38,14 @@ class Config:
     # NN Parameters
     DQN_params = {
         'update_target_net_freq': 10,  # In epochs
-        'gamma': 0.05,  # discount rate
+        'gamma': 0.85,  # discount rate
         'grad_clamp': True,  # Whether to clamp gradients to be between -1 and 1 (for stability purposes),
         'state_size': state_size,
         'num_actions': num_actions,
         'terminal_state_tensor': torch.zeros(state_size),
-        'num_layers': 3,
+        'num_layers': 6,
         'hidden_units_per_layer': 32,
-        'device': 'cpu'
+        'device': 'cuda:0'  # Valid choices are 'cpu' or 'cuda:0'
     }
 
     # Custom Data Set Parameters
