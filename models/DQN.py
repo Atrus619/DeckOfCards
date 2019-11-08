@@ -19,8 +19,9 @@ class DQN:
     """
     def __init__(self, update_target_net_freq, gamma, grad_clamp, terminal_state_tensor,
                  num_layers, hidden_units_per_layer, state_size, num_actions,
-                 loss_fn=F.smooth_l1_loss, activation_fn=nn.LeakyReLU(0.2), learning_rate=2e-4, beta1=0.5, beta2=0.999, weight_decay=0, device=None):
+                 run_id=None, loss_fn=F.smooth_l1_loss, activation_fn=nn.LeakyReLU(0.2), learning_rate=2e-4, beta1=0.5, beta2=0.999, weight_decay=0, device=None):
         # General housekeeping
+        self.run_id = 'latest' if run_id is None else run_id
         self.device = device if device is not None else torch.device('cuda:0' if (torch.cuda.is_available()) else 'cpu')
         self.update_target_net_freq = update_target_net_freq
         self.gamma = gamma
@@ -29,7 +30,7 @@ class DQN:
         self.player = None
 
         # Instantiate neural nets
-        self.policy_net = FCNet(num_layers=num_layers, hidden_units_per_layer=hidden_units_per_layer, state_size=state_size, num_actions=num_actions, loss_fn=loss_fn,
+        self.policy_net = FCNet(run_id=self.run_id, num_layers=num_layers, hidden_units_per_layer=hidden_units_per_layer, state_size=state_size, num_actions=num_actions, loss_fn=loss_fn,
                                 activation_fn=activation_fn, learning_rate=learning_rate, beta1=beta1, beta2=beta2, weight_decay=weight_decay, device=device).to(self.device)
         self.target_net = deepcopy(self.policy_net)
 
@@ -76,9 +77,9 @@ class DQN:
 
         # Save History
         if store_history:
-            self.policy_net.loss.append(loss.item())
-            self.policy_net.Q.append(pred_Q.mean().item())
-            self.policy_net.store_weight_and_grad_norms()
+            self.policy_net.history.loss.append(loss.item())
+            self.policy_net.history.Q.append(pred_Q.mean().item())
+            self.policy_net.history.store_weight_and_grad_norms()
 
     def train_self(self, num_epochs, exp_gen, store_history=False):
         device_mismatch = self.device != exp_gen.dataset.device
@@ -106,7 +107,7 @@ class DQN:
         return deepcopy(self)
 
     def save(self, folder=cfg.final_models_folder, title=None):
-        title = 'latest' if title is None else title
+        title = self.run_id if title is None else title
         os.makedirs(folder, exist_ok=True)
         with open(os.path.join(folder, title + '.pkl'), 'wb') as f:
             pkl.dump(self, f)

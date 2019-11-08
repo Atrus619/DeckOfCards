@@ -64,25 +64,25 @@ def plot_diagnostic_plots(run_id, alpha=0.5):
 
 
 def plot_model_training_plots(run_id, alpha=0.0):
-    model = util.get_model_checkpoint(run_id=run_id)
+    history = util.get_model_history(run_id=run_id)
     config = util.get_config(path=run_id)
 
     f, axes = plt.subplots(2, 1, figsize=(12, 12), sharex=True)
 
     axes[0].title.set_text('Avg Loss by Epoch')
-    axes[0].plot(model.policy_net.losses)
+    axes[0].plot(history.losses)
     axes[0].set_xlabel('Epoch')
     axes[0].set_ylabel('Loss')
 
-    for i in range(config.epochs_per_cycle, model.policy_net.epoch, config.epochs_per_cycle):
+    for i in range(config.epochs_per_cycle, history.epoch, config.epochs_per_cycle):
         axes[0].axvline(x=i, linestyle='dashed', color='g', alpha=alpha)
 
     axes[1].title.set_text('Estimated Q by Epoch')
-    axes[1].plot(model.policy_net.Qs)
+    axes[1].plot(history.Qs)
     axes[1].set_xlabel('Epoch')
     axes[1].set_ylabel('Q')
 
-    for i in range(config.epochs_per_cycle, model.policy_net.epoch, config.epochs_per_cycle):
+    for i in range(config.epochs_per_cycle, history.epoch, config.epochs_per_cycle):
         axes[1].axvline(x=i, linestyle='dashed', color='g', alpha=alpha)
 
     st = f.suptitle('Model Training Diagnostic Plots', fontsize='x-large')
@@ -92,13 +92,12 @@ def plot_model_training_plots(run_id, alpha=0.0):
 
 
 def plot_model_layer_scatters(run_id, figsize=(20, 10), alpha=0.0):
-    model = util.get_model_checkpoint(run_id=run_id)
+    history = util.get_model_history(run_id=run_id)
     config = util.get_config(path=run_id)
-    net = model.policy_net
 
-    assert net.epoch > 0, "Model needs to be trained first"
+    assert history.epoch > 0, "Model needs to be trained first"
 
-    f, axes = plt.subplots(len(net.layer_list), 4, figsize=figsize, sharex=True)
+    f, axes = plt.subplots(len(history.layer_list), 4, figsize=figsize, sharex=True)
 
     axes[0, 0].title.set_text("Weight Norms")
     axes[0, 1].title.set_text("Weight Gradient Norms")
@@ -106,21 +105,21 @@ def plot_model_layer_scatters(run_id, figsize=(20, 10), alpha=0.0):
     axes[0, 3].title.set_text("Bias Gradient Norms")
 
     for i in range(4):
-        axes[len(net.layer_list) - 1, i].set_xlabel('epochs')
+        axes[len(history.layer_list) - 1, i].set_xlabel('epochs')
 
-    for i, layer in enumerate(net.layer_list):
-        axes[i, 0].set_ylabel(net.layer_list_names[i])
-        axes[i, 0].plot(net.wnorm_history[layer]['weight'])
-        axes[i, 1].plot(net.gnorm_history[layer]['weight'])
-        axes[i, 2].plot(net.wnorm_history[layer]['bias'])
-        axes[i, 3].plot(net.gnorm_history[layer]['bias'])
+    for i, layer in enumerate(history.layer_list):
+        axes[i, 0].set_ylabel(history.layer_list_names[i])
+        axes[i, 0].plot(history.wnorm_history[layer]['weight'])
+        axes[i, 1].plot(history.gnorm_history[layer]['weight'])
+        axes[i, 2].plot(history.wnorm_history[layer]['bias'])
+        axes[i, 3].plot(history.gnorm_history[layer]['bias'])
 
-    for i, layer in enumerate(net.layer_list):
+    for i, layer in enumerate(history.layer_list):
         for j in range(4):
-            for k in range(config.epochs_per_cycle, model.policy_net.epoch, config.epochs_per_cycle):
+            for k in range(config.epochs_per_cycle, history.epoch, config.epochs_per_cycle):
                 axes[i, j].axvline(x=k, linestyle='dashed', color='g', alpha=alpha)
 
-    sup = net.name + " Layer Weight and Gradient Norms"
+    sup = history.run_id + " Layer Weight and Gradient Norms"
     st = f.suptitle(sup, fontsize='x-large')
     f.tight_layout()
     st.set_y(0.96)
@@ -128,13 +127,12 @@ def plot_model_layer_scatters(run_id, figsize=(20, 10), alpha=0.0):
 
 
 def plot_model_layer_hists(run_id, epoch=None, figsize=(20, 10)):
-    model = util.get_model_checkpoint(run_id=run_id)
-    net = model.policy_net
+    history = util.get_model_history(run_id=run_id)
 
     if epoch is None:
-        epoch = net.epoch
+        epoch = history.epoch
 
-    f, axes = plt.subplots(len(net.layer_list), 4, figsize=figsize, sharex=False)
+    f, axes = plt.subplots(len(history.layer_list), 4, figsize=figsize, sharex=False)
 
     axes[0, 0].title.set_text("Weight Histograms")
     axes[0, 1].title.set_text("Weight Gradient Histograms")
@@ -142,26 +140,26 @@ def plot_model_layer_hists(run_id, epoch=None, figsize=(20, 10)):
     axes[0, 3].title.set_text("Bias Gradient Histograms")
 
     for i in range(4):
-        axes[len(net.layer_list) - 1, i].set_xlabel('Value')
+        axes[len(history.layer_list) - 1, i].set_xlabel('Value')
 
-    for i, layer in enumerate(net.layer_list):
-        axes[i, 0].set_ylabel(net.layer_list_names[i])
+    for i, layer in enumerate(history.layer_list):
+        axes[i, 0].set_ylabel(history.layer_list_names[i])
 
         plt.sca(axes[i, 0])
-        util.convert_np_hist_to_plot(net.histogram_weight_history[layer]['weight'][epoch])
+        util.convert_np_hist_to_plot(history.histogram_weight_history[layer]['weight'][epoch])
 
         plt.sca(axes[i, 2])
-        util.convert_np_hist_to_plot(net.histogram_weight_history[layer]['bias'][epoch])
+        util.convert_np_hist_to_plot(history.histogram_weight_history[layer]['bias'][epoch])
         if epoch == 0:
             pass
         else:
             plt.sca(axes[i, 1])
-            util.convert_np_hist_to_plot(net.histogram_gradient_history[layer]['weight'][epoch])
+            util.convert_np_hist_to_plot(history.histogram_gradient_history[layer]['weight'][epoch])
 
             plt.sca(axes[i, 3])
-            util.convert_np_hist_to_plot(net.histogram_gradient_history[layer]['bias'][epoch])
+            util.convert_np_hist_to_plot(history.histogram_gradient_history[layer]['bias'][epoch])
 
-    sup = net.name + " Layer Weight and Gradient Histograms - Epoch " + str(epoch)
+    sup = history.run_id + " Layer Weight and Gradient Histograms - Epoch " + str(epoch)
     st = f.suptitle(sup, fontsize='x-large')
     f.tight_layout()
     st.set_y(0.96)

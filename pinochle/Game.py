@@ -221,7 +221,6 @@ class Game:
         if self.human_test:
             time.sleep(cfg.human_test_pause_length)
 
-        # TODO: make all players see all cards played
         print_divider()
         logging.debug("LETS GET READY TO RUMBLE!!!!!!!!!!!!!!!!!!!!!!!")
         logging.debug("Card 1: " + str(card_1))

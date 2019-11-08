@@ -5,7 +5,7 @@ import torch
 
 class Config:
     # Meta-parameters
-    num_cycles = 400
+    num_cycles = 500
     episodes_per_cycle = 50
     experience_replay_buffer = 1e5
     epochs_per_cycle = 20
@@ -15,7 +15,7 @@ class Config:
     logging_level = logging.INFO
     store_history = True  # Whether to store gradients & friends in the neural network class
     checkpoint_freq = 50  # Frequency (in cycles) to checkpoint model (save to checkpoints folder)
-    win_reward = 100
+    win_reward = 250  # Careful updating this
 
     # Epsilon
     epsilon_func = 'constant_decrement'  # Valid options are 'linear_anneal', 'constant_decrement', and 'eval'
@@ -38,7 +38,7 @@ class Config:
     # NN Parameters
     DQN_params = {
         'update_target_net_freq': 10,  # In epochs
-        'gamma': 0.85,  # discount rate
+        'gamma': 0.75,  # discount rate
         'grad_clamp': True,  # Whether to clamp gradients to be between -1 and 1 (for stability purposes),
         'state_size': state_size,
         'num_actions': num_actions,
@@ -73,3 +73,4 @@ class Config:
     experiment_folder = 'experiments'
     config_folder = 'saved_configs'
     human_test_pause_length = 3
+    history_folder = 'saved_histories'

@@ -51,15 +51,17 @@ bench.round_robin(model_list, 100)
 
 latest = util.get_model_checkpoint('Long_Test')
 
-bench.human_test(util.get_model_checkpoint('gamma75'))
+bench.human_test(util.get_model_checkpoint('gamma85_fixed'))
 
 g75 = util.get_model_checkpoint('gamma75', 350)
 g85 = util.get_model_checkpoint('gamma85', 350)
 
 
 model_list = []
-for i in range(50, 400, 50):
-    model_list.append(util.get_model_checkpoint('gamma75', i))
+for i in range(50, 500, 50):
+    model_list.append(util.get_model_checkpoint('gamma85_fixed', i))
 bench.round_robin(model_list, 100)
+
+model_list = [util.get_model_checkpoint('gamma75'), util.get_model_checkpoint('gamma85_fixed'), util.get_model_checkpoint('gamma90_fixed'), util.get_model_checkpoint('Long_Test'), ExpertPolicy(), RandomBot()]
 
 model_list = [util.get_model_checkpoint('gamma75', 350), util.get_model_checkpoint('gamma75', 400), util.get_model_checkpoint('gamma85'), ExpertPolicy()]

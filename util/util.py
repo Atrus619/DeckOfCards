@@ -107,6 +107,12 @@ def get_model_checkpoint(run_id, cycle=-1):
         return pkl.load(f)
 
 
+def get_model_history(run_id):
+    path = os.path.join(cfg.history_folder, run_id + '_history.pkl')
+    with open(path, 'rb') as f:
+        return pkl.load(f)
+
+
 def get_trick_reward(trick_score, player, winner):
     # Returns reward for player based on trick score and trick winner
     # Positive if winner, negative if loser.
@@ -157,6 +163,12 @@ def clear_run(run_id):
     if os.path.exists(saved_config_path):
         os.remove(saved_config_path)
         print(f'Config for {run_id} cleared.')
+
+    # Saved histories
+    saved_history_path = os.path.join(cfg.history_folder, run_id + '.pkl')
+    if os.path.exists(saved_history_path):
+        os.remove(saved_history_path)
+        print(f'History for {run_id} cleared.')
 
     # DB entries
     db.clear_run(run_id=run_id)

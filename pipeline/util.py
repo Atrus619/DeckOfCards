@@ -13,9 +13,9 @@ def play_game(name, players, run_id, current_cycle):
 
 
 def parse_game_output(game_output):
-    # Splits the async output from game.play() into two distinct objects.
+    # Splits stacked output (list of tuples of winrate, exp df) from game.play() into two distinct objects.
     winners, dfs = zip(*game_output)
-    return list(winners), pd.concat(dfs)
+    return list(winners), pd.concat(dfs) if any(x is not None for x in dfs) else None
 
 
 def play_games(num_games, name, players, run_id, current_cycle):

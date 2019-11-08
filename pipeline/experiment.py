@@ -44,7 +44,7 @@ def run_full_experiment(config):
     start_time = time.time()
     
     # Define players
-    model_1 = DQN(**config.DQN_params)
+    model_1 = DQN(run_id=config.run_id, **config.DQN_params)
     model_2 = model_1.copy()
     epsilon = Epsilon(epsilon_func=config.epsilon_func, max_epsilon=config.max_epsilon, min_epsilon=config.min_epsilon,
                       eval_epsilon=config.eval_epsilon, num_cycles=config.num_cycles, decrement=config.epsilon_decrement)
@@ -86,7 +86,8 @@ def run_full_experiment(config):
         # Update model_2
         if i % config.player_2_update_freq == 0:
             logger.info(cs.DIVIDER)
-            logger.info('Setting model 2 equal to model 1...')
+            logger.info('Storing history and setting model 2 equal to model 1...')
+            player_list[0].model.policy_net.store_history()
             player_list[1].set_model(model=model_1.copy())
     
         # Benchmark

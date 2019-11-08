@@ -9,12 +9,13 @@ from classes.Human import Human
 from util.Constants import Constants as cs
 import matplotlib.pyplot as plt
 from collections import OrderedDict
+import time
+import pipeline.util as pu
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
 
 def benchmark_test(primary_model, benchmark_model, num_games, benchmark_bot_name='benchmark_bot', run_id=None):
-    winner_list = []
     epsilon = Epsilon()
     player_1 = Agent(name=cfg.bot_1_name, model=primary_model, epsilon=epsilon)
     player_2 = Agent(name=benchmark_bot_name, model=benchmark_model, epsilon=epsilon)
@@ -25,11 +26,17 @@ def benchmark_test(primary_model, benchmark_model, num_games, benchmark_bot_name
     if 'policy_net' in dir(player_2.model):
         player_2.model.policy_net.eval()
 
+    game_output = []
     for j in range(num_games):
         player_list = [player_1, player_2]
         game = Game(name="pinochle", players=player_list, run_id=run_id, current_cycle=None)
         game.deal()
-        winner_list.append(game.play()[0])
+        game_output.append(game.play())
+
+    winner_list, exp_df = pu.parse_game_output(game_output=game_output)
+
+    if run_id is not None:  # Store history
+        db.upload_exp(df=exp_df)
 
     return 1 - sum(winner_list) / len(winner_list)
 
@@ -67,16 +74,21 @@ def get_average_reward(run_id, previous_experience_id, agent_id, opponent_id):
     return average.reward
 
 
-def round_robin(model_list, num_games, verbose=True, plot=True):
+def round_robin(model_list, num_games, verbose=True, plot=True, device='cuda:0'):
+    start_time = time.time()
     epsilon = Epsilon
 
     model_wins = OrderedDict()
     for i, model in enumerate(model_list):
         model_wins[f'Player {i}'] = [0, model]
+        if model.device != device:
+            model.policy_net = model.policy_net.to(device)
 
     for i, p1_model in enumerate(model_list):
         for j, p2_model in enumerate(model_list):
             if i < j:
+                round_start_time = time.time()
+
                 p1 = Agent(name=f'Player {i}', model=p1_model, epsilon=epsilon)
                 p2 = Agent(name=f'Player {j}', model=p2_model, epsilon=epsilon)
 
@@ -87,7 +99,7 @@ def round_robin(model_list, num_games, verbose=True, plot=True):
                 p2_wins = int(num_games - p1_wins)
 
                 if verbose:
-                    print(f'Player {i}: {p1_wins}\tPlayer {j}: {p2_wins}')
+                    print(f'Player {i}: {p1_wins}\tPlayer {j}: {p2_wins}\tDuration: {util.get_pretty_time(time.time() - round_start_time)}')
                     print(cs.DIVIDER)
 
                 model_wins[p1.name][0] += p1_wins
@@ -98,6 +110,10 @@ def round_robin(model_list, num_games, verbose=True, plot=True):
     if verbose:
         for i, model in enumerate(output):
             print(f'Rank {i+1}: {model[0]} with {model[1][0]} wins')
+        total_games = len(model_list) / 2 * (len(model_list) - 1)
+        total_duration = time.time() - start_time
+        avg_time_per_game = total_duration / total_games
+        print(f'{total_games} total games played over {util.get_pretty_time(total_duration)} ({util.get_pretty_time(avg_time_per_game)} per game)')
 
     if plot:
         xs = [x[0] for x in model_wins.items()]
