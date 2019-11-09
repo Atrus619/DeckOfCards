@@ -43,7 +43,7 @@ def log_state(df, p1, p2, meld, run_id):
     return df, (p1['state'], df_len - 2), (p2['state'], df_len - 1)
 
 
-def update_state(df, p1, p2, winner=None):
+def update_state(df, p1, p2, win_reward, winner=None):
     """
     PLAYER ORDER: TRICK ORDER
 
@@ -68,8 +68,8 @@ def update_state(df, p1, p2, winner=None):
         p1_next_state_vector = cfg.terminal_state
         p2_next_state_vector = cfg.terminal_state
 
-    p1_reward = util.get_reward(player=p1['player'], state_1=p1['state_1'], state_2=p1['state_2'], winner=winner)
-    p2_reward = util.get_reward(player=p2['player'], state_1=p2['state_1'], state_2=p2['state_2'], winner=winner)
+    p1_reward = util.get_reward(player=p1['player'], state_1=p1['state_1'], state_2=p1['state_2'], winner=winner, win_reward=win_reward)
+    p2_reward = util.get_reward(player=p2['player'], state_1=p2['state_1'], state_2=p2['state_2'], winner=winner, win_reward=win_reward)
 
     df.loc[[p1['row_id'], p2['row_id']], ['next_vector', 'reward']] = [[p1_next_state_vector, p1_reward], [p2_next_state_vector, p2_reward]]
     return df

@@ -43,8 +43,8 @@ gamma4 = util.get_model_checkpoint('Small_Gamma4')
 gamma5 = util.get_model_checkpoint('Small_Gamma5')
 
 model_list = []
-for i in range(250, 700, 50):
-    model_list.append(util.get_model_checkpoint('Long_Test', i))
+for i in range(50, 500, 50):
+    model_list.append(util.get_model_checkpoint('gamma65_new', i))
 model_list.append(ExpertPolicy())
 model_list.append(RandomBot())
 bench.round_robin(model_list, 100)
@@ -64,4 +64,4 @@ bench.round_robin(model_list, 100)
 
 model_list = [util.get_model_checkpoint('gamma75'), util.get_model_checkpoint('gamma85_fixed'), util.get_model_checkpoint('gamma90_fixed'), util.get_model_checkpoint('Long_Test'), ExpertPolicy(), RandomBot()]
 
-model_list = [util.get_model_checkpoint('gamma75', 350), util.get_model_checkpoint('gamma75', 400), util.get_model_checkpoint('gamma85'), ExpertPolicy()]
+model_list = [util.get_model_checkpoint('gamma75'), util.get_model_checkpoint('gamma65_new'), util.get_model_checkpoint('gamma70_new'), util.get_model_checkpoint('gamma75_new'), util.get_model_checkpoint('Long_Test'), ExpertPolicy()]

@@ -81,7 +81,7 @@ def round_robin(model_list, num_games, verbose=True, plot=True, device='cuda:0')
     model_wins = OrderedDict()
     for i, model in enumerate(model_list):
         model_wins[f'Player {i}'] = [0, model]
-        if model.device != device:
+        if 'device' in dir(model) and model.device != device:
             model.policy_net = model.policy_net.to(device)
 
     for i, p1_model in enumerate(model_list):
@@ -110,7 +110,7 @@ def round_robin(model_list, num_games, verbose=True, plot=True, device='cuda:0')
     if verbose:
         for i, model in enumerate(output):
             print(f'Rank {i+1}: {model[0]} with {model[1][0]} wins')
-        total_games = len(model_list) / 2 * (len(model_list) - 1)
+        total_games = len(model_list) / 2 * (len(model_list) - 1) * num_games
         total_duration = time.time() - start_time
         avg_time_per_game = total_duration / total_games
         print(f'{total_games} total games played over {util.get_pretty_time(total_duration)} ({util.get_pretty_time(avg_time_per_game)} per game)')

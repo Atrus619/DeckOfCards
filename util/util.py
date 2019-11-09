@@ -175,15 +175,16 @@ def clear_run(run_id):
     print(f'DB entries for {run_id} cleared (if they existed).')
 
 
-def get_reward(player, state_1, state_2, winner=None):
+def get_reward(player, state_1, state_2, win_reward, winner=None):
     """
     Reward is calculated as follows:
         1. Score component: Change in net advantage between states
-        2. Game Over component: If game is over, +50 if win and -50 if lose
+        2. Game Over component: If game is over, + win_reward if win and - win_reward if lose
 
     :param player: Player object for which to calculate reward
     :param state_1: Initial state
     :param state_2: Next state
+    :param win_reward: Amount gained or loss for ultimately winning/losing the game
     :param winner: If None, game is not over. If not None, specifies the player object who won the entire game
     :return: Reward
     """
@@ -193,8 +194,8 @@ def get_reward(player, state_1, state_2, winner=None):
 
     if winner is not None:
         if player == winner:
-            game_component = cfg.win_reward
+            game_component = win_reward
         else:  # Lose
-            game_component = -1 * cfg.win_reward
+            game_component = -1 * win_reward
 
     return score_component + game_component

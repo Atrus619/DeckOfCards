@@ -214,7 +214,7 @@ class Game:
         if self.players[0] in self.player_inter_trick_history and self.run_id is not None:  # Don't update on first trick of game
             p1_update_dict = {'player': player_1, 'state_1': self.player_inter_trick_history[player_1][0], 'state_2': trick_start_state, 'row_id': self.player_inter_trick_history[player_1][1]}
             p2_update_dict = {'player': player_2, 'state_1': self.player_inter_trick_history[player_2][0], 'state_2': first_move_state, 'row_id': self.player_inter_trick_history[player_2][1]}
-            self.exp_df = sl.update_state(df=self.exp_df, p1=p1_update_dict, p2=p2_update_dict)
+            self.exp_df = sl.update_state(df=self.exp_df, p1=p1_update_dict, p2=p2_update_dict, win_reward=config.win_reward)
 
         card_2 = self.collect_trick_cards(player_2, first_move_state)  # Collect card from second player based on priority
 

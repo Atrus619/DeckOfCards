@@ -15,7 +15,7 @@ class Config:
     logging_level = logging.INFO
     store_history = True  # Whether to store gradients & friends in the neural network class
     checkpoint_freq = 50  # Frequency (in cycles) to checkpoint model (save to checkpoints folder)
-    win_reward = 250  # Careful updating this
+    win_reward = 150
 
     # Epsilon
     epsilon_func = 'constant_decrement'  # Valid options are 'linear_anneal', 'constant_decrement', and 'eval'
