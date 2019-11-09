@@ -97,7 +97,7 @@ def plot_model_layer_scatters(run_id, figsize=(20, 10), alpha=0.0):
 
     assert history.epoch > 0, "Model needs to be trained first"
 
-    f, axes = plt.subplots(len(history.layer_list), 4, figsize=figsize, sharex=True)
+    f, axes = plt.subplots(len(history.layer_zip), 4, figsize=figsize, sharex=True)
 
     axes[0, 0].title.set_text("Weight Norms")
     axes[0, 1].title.set_text("Weight Gradient Norms")
@@ -107,14 +107,16 @@ def plot_model_layer_scatters(run_id, figsize=(20, 10), alpha=0.0):
     for i in range(4):
         axes[len(history.layer_list) - 1, i].set_xlabel('epochs')
 
-    for i, layer in enumerate(history.layer_list):
-        axes[i, 0].set_ylabel(history.layer_list_names[i])
-        axes[i, 0].plot(history.wnorm_history[layer]['weight'])
-        axes[i, 1].plot(history.gnorm_history[layer]['weight'])
-        axes[i, 2].plot(history.wnorm_history[layer]['bias'])
-        axes[i, 3].plot(history.gnorm_history[layer]['bias'])
+    layer_list_names = [x[1] for x in history.layer_zip]
 
-    for i, layer in enumerate(history.layer_list):
+    for i, (_, layer_name) in enumerate(history.layer_zip):
+        axes[i, 0].set_ylabel(layer_list_names[i])
+        axes[i, 0].plot(history.wnorm_history[layer_name]['weight'])
+        axes[i, 1].plot(history.gnorm_history[layer_name]['weight'])
+        axes[i, 2].plot(history.wnorm_history[layer_name]['bias'])
+        axes[i, 3].plot(history.gnorm_history[layer_name]['bias'])
+
+    for i, (_, layer_name) in enumerate(history.layer_list):
         for j in range(4):
             for k in range(config.epochs_per_cycle, history.epoch, config.epochs_per_cycle):
                 axes[i, j].axvline(x=k, linestyle='dashed', color='g', alpha=alpha)
@@ -140,24 +142,26 @@ def plot_model_layer_hists(run_id, epoch=None, figsize=(20, 10)):
     axes[0, 3].title.set_text("Bias Gradient Histograms")
 
     for i in range(4):
-        axes[len(history.layer_list) - 1, i].set_xlabel('Value')
+        axes[len(history.layer_zip) - 1, i].set_xlabel('Value')
 
-    for i, layer in enumerate(history.layer_list):
-        axes[i, 0].set_ylabel(history.layer_list_names[i])
+    layer_list_names = [x[1] for x in history.layer_zip]
+
+    for i, (_, layer_name) in enumerate(history.layer_zip):
+        axes[i, 0].set_ylabel(layer_list_names[i])
 
         plt.sca(axes[i, 0])
-        util.convert_np_hist_to_plot(history.histogram_weight_history[layer]['weight'][epoch])
+        util.convert_np_hist_to_plot(history.histogram_weight_history[layer_name]['weight'][epoch])
 
         plt.sca(axes[i, 2])
-        util.convert_np_hist_to_plot(history.histogram_weight_history[layer]['bias'][epoch])
+        util.convert_np_hist_to_plot(history.histogram_weight_history[layer_name]['bias'][epoch])
         if epoch == 0:
             pass
         else:
             plt.sca(axes[i, 1])
-            util.convert_np_hist_to_plot(history.histogram_gradient_history[layer]['weight'][epoch])
+            util.convert_np_hist_to_plot(history.histogram_gradient_history[layer_name]['weight'][epoch])
 
             plt.sca(axes[i, 3])
-            util.convert_np_hist_to_plot(history.histogram_gradient_history[layer]['bias'][epoch])
+            util.convert_np_hist_to_plot(history.histogram_gradient_history[layer_name]['bias'][epoch])
 
     sup = history.run_id + " Layer Weight and Gradient Histograms - Epoch " + str(epoch)
     st = f.suptitle(sup, fontsize='x-large')

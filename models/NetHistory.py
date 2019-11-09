@@ -55,7 +55,7 @@ class NetHistory:
         nn_module_ignore_list = {'batchnorm', 'activation', 'loss', 'Noise', 'CustomCatGANLayer'}  # List of nn.modules to ignore when constructing layer_list
         layer_list = [x for x in self._modules.values() if not any(excl in str(type(x)) for excl in nn_module_ignore_list)]
         layer_list_names = [x for x in self._modules.keys() if not any(excl in str(type(self._modules[x])) for excl in nn_module_ignore_list)]
-        return zip(layer_list, layer_list_names)
+        return list(zip(layer_list, layer_list_names))
 
     def init_history(self):
         """Initializes objects for storing history based on layer_list"""
