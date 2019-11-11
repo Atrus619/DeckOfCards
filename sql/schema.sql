@@ -4,7 +4,7 @@ DROP TABLE if exists cards.experience_archive cascade;
 
 DROP TABLE if exists cards.metrics cascade;
 
-DROP SCHEMA if exists cards;
+DROP SCHEMA if exists cards cascade;
 
 CREATE SCHEMA cards AUTHORIZATION postgres;
 
