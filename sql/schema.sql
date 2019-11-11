@@ -1,5 +1,7 @@
 DROP TABLE if exists cards.experience;
 
+DROP TABLE if exists cards.experience_archive;
+
 DROP TABLE if exists cards.metrics;
 
 DROP SCHEMA if exists cards;
