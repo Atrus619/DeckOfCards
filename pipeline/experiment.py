@@ -41,6 +41,7 @@ import os
 def run_full_experiment(config):
     # archiving old experience
     db.archive_exp(db.get_all_exp())
+    db.delete_all_exp()
 
     util.setup_file_logger(name=config.run_id, filename=config.run_id)
     logger = logging.getLogger(config.run_id)
@@ -55,7 +56,6 @@ def run_full_experiment(config):
     player_list = [Agent(name=config.bot_1_name, model=model_1, epsilon=epsilon), Agent(name=config.bot_2_name, model=model_2, epsilon=epsilon)]
 
     winner_list = []
-    player_1_winrate = []
     previous_experience_id = 0
     
     util.save_config(config=config, path=config.run_id)

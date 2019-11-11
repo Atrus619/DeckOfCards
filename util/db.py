@@ -59,6 +59,16 @@ def get_all_exp():
     return df
 
 
+def delete_all_exp():
+    with open_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                f"DELETE FROM cards.experience;"
+            )
+
+        conn.commit()
+
+
 def insert_metrics(run_id, win_rate, win_rate_random, win_rate_expert_policy, average_reward):
     with open_connection() as conn:
         with conn.cursor() as cursor:
