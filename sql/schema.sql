@@ -32,7 +32,7 @@ CREATE TABLE cards.metrics (
 
 
 CREATE TABLE cards.experience_archive (
-	id NULL,
+	id numeric NULL,
 	ins_ts timestamp NULL,
 	agent_id varchar NULL,
 	run_id varchar NULL,
