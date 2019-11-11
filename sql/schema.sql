@@ -32,12 +32,12 @@ CREATE TABLE cards.metrics (
 
 
 CREATE TABLE cards.experience_archive (
-	id serial NOT NULL,
-	ins_ts timestamp NOT NULL,
+	id NULL,
+	ins_ts timestamp NULL,
 	agent_id varchar NULL,
-	run_id varchar NOT NULL,
-	vector varchar NOT NULL,
-	reward numeric NOT NULL,
+	run_id varchar NULL,
+	vector varchar NULL,
+	reward numeric NULL,
 	"action" varchar NULL,
 	next_vector varchar NULL
 );
