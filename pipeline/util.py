@@ -5,9 +5,9 @@ from datasets.GameHistory import GameHistory
 import pandas as pd
 
 
-def play_game(name, players, run_id, current_cycle):
+def play_game(name, players, run_id, current_cycle, config):
     """Single function to play a game to be used in async parallel processing"""
-    game = Game(name=name, players=players, run_id=run_id, current_cycle=current_cycle)
+    game = Game(name=name, players=players, run_id=run_id, current_cycle=current_cycle, config=config)
     game.deal()
     return game.play()
 
@@ -18,10 +18,10 @@ def parse_game_output(game_output):
     return list(winners), pd.concat(dfs) if any(x is not None for x in dfs) else None
 
 
-def play_games(num_games, name, players, run_id, current_cycle):
+def play_games(num_games, name, players, run_id, current_cycle, config):
     game_output = []
     for i in range(num_games):
-        game_output.append(play_game(name=name, players=players, run_id=run_id, current_cycle=current_cycle))
+        game_output.append(play_game(name=name, players=players, run_id=run_id, current_cycle=current_cycle, config=config))
 
     winner_list, df = parse_game_output(game_output=game_output)
     db.upload_exp(df=df)

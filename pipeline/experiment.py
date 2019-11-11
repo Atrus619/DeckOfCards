@@ -76,7 +76,7 @@ def run_full_experiment(config):
         #     game_output = pool.starmap_async(parallel.play_game, [(config.game, player_list, config.run_id, i) for j in range(config.episodes_per_cycle)]).get()
 
         # Old serial method
-        winner_list += pu.play_games(num_games=config.episodes_per_cycle, name=config.game, players=player_list, run_id=config.run_id, current_cycle=i)
+        winner_list += pu.play_games(num_games=config.episodes_per_cycle, name=config.game, players=player_list, run_id=config.run_id, current_cycle=i, config=config)
 
         logger.info('Data collection complete.\tTotal Episode Time: ' + util.get_pretty_time(time.time() - cycle_start_time))
         logger.info('Loading experience and training model...')
