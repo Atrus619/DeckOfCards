@@ -1,0 +1,15 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea/
+venv/
+*.pyc
+classes/*.pyc
+classes/__pycache__
+util/__pycache__
+pinochle/__pycache__
+requirements.txt
+logs
+saved_configs
+saved_models
+model_checkpoints
+experiments
+saved_histories
