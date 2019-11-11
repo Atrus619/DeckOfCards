@@ -23,7 +23,7 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
 # pinochle rules: https://www.pagat.com/marriage/pin2hand.html
 class Game:
-    def __init__(self, name, players, run_id="42069", current_cycle=None, human_test=False):
+    def __init__(self, name, players, run_id="42069", current_cycle=None, human_test=False, config=cfg):
         # Setting run_id = None results in no records being saved to database
         self.run_id = run_id
         self.name = name.upper()
@@ -36,6 +36,7 @@ class Game:
         self.meld_util = None
         self.current_cycle = current_cycle  # To determine the current value of epsilon
         self.human_test = human_test
+        self.config = config
         self.exp_df = pd.DataFrame(columns=['agent_id', 'opponent_id', 'run_id', 'vector', 'action', 'next_vector', 'reward'])
 
         if self.name == cs.PINOCHLE:
@@ -214,7 +215,7 @@ class Game:
         if self.players[0] in self.player_inter_trick_history and self.run_id is not None:  # Don't update on first trick of game
             p1_update_dict = {'player': player_1, 'state_1': self.player_inter_trick_history[player_1][0], 'state_2': trick_start_state, 'row_id': self.player_inter_trick_history[player_1][1]}
             p2_update_dict = {'player': player_2, 'state_1': self.player_inter_trick_history[player_2][0], 'state_2': first_move_state, 'row_id': self.player_inter_trick_history[player_2][1]}
-            self.exp_df = sl.update_state(df=self.exp_df, p1=p1_update_dict, p2=p2_update_dict, win_reward=config.win_reward)
+            self.exp_df = sl.update_state(df=self.exp_df, p1=p1_update_dict, p2=p2_update_dict, win_reward=self.config.win_reward)
 
         card_2 = self.collect_trick_cards(player_2, first_move_state)  # Collect card from second player based on priority
 
@@ -306,7 +307,7 @@ class Game:
                               'row_id': self.player_inter_trick_history[self.players[0]][1]}
             p2_update_dict = {'player': self.players[1], 'state_1': self.player_inter_trick_history[self.players[1]][0], 'state_2': end_game_state,
                               'row_id': self.player_inter_trick_history[self.players[1]][1]}
-            self.exp_df = sl.update_state(df=self.exp_df, p1=p1_update_dict, p2=p2_update_dict, winner=self.players[winner_index])
+            self.exp_df = sl.update_state(df=self.exp_df, p1=p1_update_dict, p2=p2_update_dict, winner=self.players[winner_index], win_reward=self.config.win_reward)
 
         print_divider()
         logging.debug("Winner: " + str(self.players[winner_index]) + "\tScore: " + str(final_scores[winner_index]))

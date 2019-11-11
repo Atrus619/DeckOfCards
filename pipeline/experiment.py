@@ -52,10 +52,10 @@ def run_full_experiment(config):
     epsilon = Epsilon(epsilon_func=config.epsilon_func, max_epsilon=config.max_epsilon, min_epsilon=config.min_epsilon,
                       eval_epsilon=config.eval_epsilon, num_cycles=config.num_cycles, decrement=config.epsilon_decrement)
 
-    player_list = [Agent(name=config.bot_1_name, model=model_1, epsilon=epsilon), Agent(name=config.bot_2_name, model=model_2, epsilon=epsilon)]
+    player_list = [Agent(name=config.bot_1_name, model=model_1, epsilon=epsilon),
+                   Agent(name=config.bot_2_name, model=model_2, epsilon=epsilon)]
 
     winner_list = []
-    player_1_winrate = []
     previous_experience_id = 0
     
     util.save_config(config=config, path=config.run_id)
