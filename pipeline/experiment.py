@@ -39,6 +39,9 @@ import os
 
 
 def run_full_experiment(config):
+    # archiving old experience
+    db.archive_exp(db.get_all_exp())
+
     util.setup_file_logger(name=config.run_id, filename=config.run_id)
     logger = logging.getLogger(config.run_id)
     start_time = time.time()

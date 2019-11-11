@@ -29,3 +29,15 @@ CREATE TABLE cards.metrics (
 	ins_ts timestamp NOT NULL DEFAULT now(),
 	CONSTRAINT win_rate_pk PRIMARY KEY (id)
 );
+
+
+CREATE TABLE cards.experience_archive (
+	id serial NOT NULL,
+	ins_ts timestamp NOT NULL DEFAULT now(),
+	agent_id varchar NULL,
+	run_id varchar NOT NULL,
+	vector varchar NOT NULL,
+	reward numeric NOT NULL,
+	"action" varchar NULL,
+	next_vector varchar NULL
+);

@@ -27,27 +27,36 @@ def upload_exp(df):
                 pge.execute_batch(cursor, insert_stmt, df.values)
             conn.commit()
 
-# # Deprecated
-# def insert_exp(cursor, agent_id, opponent_id, run_id, vector, action):
-#     """Updates db with information about current state and action"""
-#     cursor.execute(
-#             f"INSERT INTO cards.experience \
-#             (ins_ts, agent_id, opponent_id, run_id, vector, action) \
-#             VALUES (now(), '{agent_id}', '{opponent_id}', '{run_id}', '{vector}', '{action}') \
-#             RETURNING id;"
-#             )
-#
-#     result = cursor.fetchone()
-#     return result[0]
-#
-#
-# def update_exp(cursor, next_vector, reward, row_id):
-#     """Re-updates db with information about next_state and resulting reward"""
-#     cursor.execute(
-#             f"UPDATE cards.experience \
-#             SET ins_ts = now(), next_vector = '{next_vector}', reward = '{reward}' \
-#             WHERE id = '{row_id}';"
-#             )
+
+def archive_exp(df):
+    if len(df) > 0:
+        columns = ",".join(df.columns)
+
+        values = "VALUES ({})".format(",".join(["%s" for _ in df.columns]))
+
+        insert_stmt = "INSERT INTO {} ({}) {}".format('cards.experience_archive', columns, values)
+
+        with open_connection() as conn:
+            with conn.cursor() as cursor:
+                pge.execute_batch(cursor, insert_stmt, df.values)
+            conn.commit()
+
+
+def get_all_exp():
+    """
+    Select order is different from other queries
+    """
+    with open_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                f"SELECT id, ins_ts, agent_id, run_id, vector, reward, action, next_vector FROM \
+                cards.experience \
+                ORDER BY ins_ts DESC;"
+            )
+            result = cursor.fetchall()
+
+    df = pd.DataFrame(result, columns=['id', 'ins_ts', 'agent_id', 'run_id', 'vector', 'reward', 'action', 'next_vector'])
+    return df
 
 
 def insert_metrics(run_id, win_rate, win_rate_random, win_rate_expert_policy, average_reward):
