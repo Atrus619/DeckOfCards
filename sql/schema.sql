@@ -1,8 +1,8 @@
-DROP TABLE if exists cards.experience;
+DROP TABLE if exists cards.experience cascade;
 
-DROP TABLE if exists cards.experience_archive;
+DROP TABLE if exists cards.experience_archive cascade;
 
-DROP TABLE if exists cards.metrics;
+DROP TABLE if exists cards.metrics cascade;
 
 DROP SCHEMA if exists cards;
 
@@ -37,6 +37,7 @@ CREATE TABLE cards.experience_archive (
 	id numeric NULL,
 	ins_ts timestamp NULL,
 	agent_id varchar NULL,
+	opponent_id varchar NULL,
 	run_id varchar NULL,
 	vector varchar NULL,
 	reward numeric NULL,
