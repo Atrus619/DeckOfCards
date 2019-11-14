@@ -5,7 +5,7 @@ import numpy as np
 from models.NetHistory import NetHistory
 
 
-class FCNet(nn.Module):
+class DQN_FCNet(nn.Module):
     """
     Simple Fully-Connected Network (FCN) for Deep Q Learning Network (DQN)
     """
@@ -13,7 +13,6 @@ class FCNet(nn.Module):
                  loss_fn, activation_fn, learning_rate, beta1, beta2, weight_decay, device):
         # General housekeeping
         super().__init__()
-        self.name = 'DQN_FCN'
         self.run_id = run_id
         self.epoch = 0
         self.device = device

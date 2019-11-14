@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
-from models.nets.FCNet import FCNet
+from models.nets.DQN_FCNet import DQN_FCNet
 from copy import deepcopy
 import pickle as pkl
 import os
@@ -17,6 +17,7 @@ class DQN:
     """
     Deep Q Learning Network (DQN)
     """
+
     def __init__(self, update_target_net_freq, gamma, grad_clamp, terminal_state_tensor,
                  num_layers, hidden_units_per_layer, state_size, num_actions,
                  run_id=None, loss_fn=F.smooth_l1_loss, activation_fn=nn.LeakyReLU(0.2), learning_rate=2e-4, beta1=0.5, beta2=0.999, weight_decay=0, device=None):
@@ -30,8 +31,10 @@ class DQN:
         self.player = None
 
         # Instantiate neural nets
-        self.policy_net = FCNet(run_id=self.run_id, num_layers=num_layers, hidden_units_per_layer=hidden_units_per_layer, state_size=state_size, num_actions=num_actions, loss_fn=loss_fn,
-                                activation_fn=activation_fn, learning_rate=learning_rate, beta1=beta1, beta2=beta2, weight_decay=weight_decay, device=device).to(self.device)
+        self.policy_net = DQN_FCNet(run_id=self.run_id, num_layers=num_layers, hidden_units_per_layer=hidden_units_per_layer, state_size=state_size, num_actions=num_actions,
+                                    loss_fn=loss_fn,
+                                    activation_fn=activation_fn, learning_rate=learning_rate, beta1=beta1, beta2=beta2, weight_decay=weight_decay, device=device).to(
+            self.device)
         self.target_net = deepcopy(self.policy_net)
 
         # History
