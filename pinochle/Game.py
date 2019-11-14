@@ -80,8 +80,8 @@ class Game:
                 logging.debug("Model hand before action:")
                 state.convert_to_human_readable_format(player)
 
-            action = player.get_action(state, self, current_cycle=self.current_cycle, is_hand=True)
-            user_input = player.convert_model_output(output_index=action, game=self, is_hand=True)
+            action = player.get_action(state, self, current_cycle=self.current_cycle, is_trick=True)
+            user_input = player.convert_model_output(output_index=action, game=self, is_trick=True)
         source = user_input[0]
         index = int(user_input[1:])
 
@@ -115,63 +115,59 @@ class Game:
         meld_class = None
         combo_name = None
 
-        while len(collected_hand_cards) + len(collected_meld_cards) < limit:
-            print_divider()
-            self.hands[player].show()
-            print_divider()
-            self.melds[player].show()
+        if type(player).__name__ == 'Human':
+            while len(collected_hand_cards) + len(collected_meld_cards) < limit:
 
-            if first_hand_card:
-                print_divider()
-                logging.debug("For meld please select first card from hand.")
-
-            if type(player).__name__ == 'Human':
-                user_input = player.get_action(state, msg=player.name + " select card, type 'Y' to exit:")
-            else:  # Bot
-                action = player.get_action(state, current_cycle=self.current_cycle, is_hand=False)
-                user_input = player.convert_model_output(output_index=action, game=self, is_hand=False)
-
-            if user_input == 'Y':
-                break
-
-            source = user_input[0]
-            index = int(user_input[1:])
-
-            if first_hand_card:
-                if source != "H":
+                if first_hand_card:
                     print_divider()
-                    logging.debug("In case of meld, please select first card from hand.")
-                    continue
+                    logging.debug("For meld please select first card from hand.")
 
-                first_hand_card = False
+                user_input = player.get_action(state, msg=player.name + " select card, type 'Y' to exit:")
 
-            if source == "H":
-                card_input = self.hands[player].cards[index]
-                card = self.hands[player].pull_card(card_input)
-                collected_hand_cards.append(card)
-            elif source == "M":
-                mt = self.melds[player].pull_melded_card(self.melds[player].melded_cards[index])
-                collected_meld_cards.append(mt)
+                if user_input == 'Y':
+                    break
 
-        # Combine collected hand and meld card lists for score calculation
-        collected_cards = collected_hand_cards + [mt.card for mt in collected_meld_cards]
+                source = user_input[0]
+                index = int(user_input[1:])
 
-        if len(collected_cards) > 0:
-            score, meld_class, combo_name = self.meld_util.calculate_score(collected_cards)
+                if first_hand_card:
+                    if source != "H":
+                        print_divider()
+                        logging.debug("In case of meld, please select first card from hand.")
+                        continue
 
-            if score == 0:
-                valid = False
-            else:
-                for mt in collected_meld_cards:
-                    original_meld_class = mt.meld_class
-                    if original_meld_class == meld_class:
-                        original_meld_score = mt.score
-                        if original_meld_score <= score:
-                            valid = False
-                            break
-            if not valid:
-                self.hands[player] = original_hand_cards
-                self.melds[player] = original_meld_cards
+                    first_hand_card = False
+
+                if source == "H":
+                    card_input = self.hands[player].cards[index]
+                    card = self.hands[player].pull_card(card_input)
+                    collected_hand_cards.append(card)
+                elif source == "M":
+                    mt = self.melds[player].pull_melded_card(self.melds[player].melded_cards[index])
+                    collected_meld_cards.append(mt)
+
+            # Combine collected hand and meld card lists for score calculation
+            collected_cards = collected_hand_cards + [mt.card for mt in collected_meld_cards]
+
+            if len(collected_cards) > 0:
+                score, meld_class, combo_name = self.meld_util.calculate_score(collected_cards)
+
+                if score == 0:
+                    valid = False
+                else:
+                    for mt in collected_meld_cards:
+                        original_meld_class = mt.meld_class
+                        if original_meld_class == meld_class:
+                            original_meld_score = mt.score
+                            if original_meld_score <= score:
+                                valid = False
+                                break
+                if not valid:
+                    self.hands[player] = original_hand_cards
+                    self.melds[player] = original_meld_cards
+        else:  # Bot
+            action = player.get_action(state, current_cycle=self.current_cycle, is_trick=False)
+            user_input = player.convert_model_output(output_index=action, game=self, is_trick=False)
 
         return [MeldTuple(card, combo_name, meld_class, score) for card in collected_cards], valid
 
@@ -258,13 +254,13 @@ class Game:
         meld_state = self.create_state()
         mt_list = []
         # no melding in this version
-        # while 1:
-        #     mt_list, valid = self.collect_meld_cards(winner, meld_state)
-        #     if valid:
-        #         break
-        #     else:
-        #         print_divider()
-        #         logging.debug("Invalid combination submitted, please try again.")
+        while 1:
+            mt_list, valid = self.collect_meld_cards(winner, meld_state)
+            if valid:
+                break
+            else:
+                print_divider()
+                logging.debug("Invalid combination submitted, please try again.")
 
         # Update scores
         if len(mt_list) == 0:  # No cards melded, so score is 0

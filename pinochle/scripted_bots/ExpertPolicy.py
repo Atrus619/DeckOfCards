@@ -5,7 +5,7 @@ from pinochle.Trick import Trick
 
 
 class ExpertPolicy:
-    def get_legal_action(self, state, player, game, is_hand):
+    def get_legal_action(self, state, player, game, is_trick):
         """
         Leon, the professional takes care of business. This is our exquisitely hand crafted expert policy.
         Works with trick play only for now.

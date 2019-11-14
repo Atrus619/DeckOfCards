@@ -1,4 +1,3 @@
-from classes.Suits import Suits
 from classes.Value import Value
 from util.Constants import Constants as cs
 
@@ -13,7 +12,7 @@ class Card:
         if self.value == cs.JOKER:
             assert self.suit is None, "Joker should have suit of None."
         else:
-            assert self.suit in Suits.allowed, "Please use a valid suit."
+            assert self.suit in cs.suits, "Please use a valid suit."
 
         assert self.value in Value.allowed, "Please use a valid value."
 

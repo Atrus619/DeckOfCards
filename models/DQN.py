@@ -40,9 +40,9 @@ class DQN:
         # History
         self.loss = []
 
-    def get_legal_action(self, state, player, game, is_hand):
+    def get_legal_action(self, state, player, game, is_trick):
         # Picks the highest output legal action, ignoring illegal actions
-        valid_action_mask = state.get_valid_action_mask(player=player, is_hand=is_hand)
+        valid_action_mask = state.get_valid_action_mask(player=player, is_trick=is_trick)
         invalid_action_mask = (valid_action_mask == 0).nonzero()
         initial_action_tensor = self.policy_net(state.get_player_state_as_tensor(player=player))
 
@@ -123,7 +123,7 @@ class DQN:
 
         card_qs = []
         for i, action in enumerate(actions):
-            card_qs.append((vs.PINOCHLE_ONE_HOT_VECTOR[i], action.item(), player.convert_model_output(output_index=i, game=game, is_hand=True) is not None))
+            card_qs.append((vs.PINOCHLE_ONE_HOT_VECTOR[i], action.item(), player.convert_model_output(output_index=i, game=game, is_trick=True) is not None))
 
         card_qs = sorted(card_qs, key=lambda tup: tup[1], reverse=True)
         # card_qs = sorted(card_qs, key=lambda tup: tup[2], reverse=True)

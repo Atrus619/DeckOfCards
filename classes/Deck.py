@@ -1,4 +1,3 @@
-from classes.Suits import Suits
 from classes.Value import Value
 from classes.Card import Card
 from util.Constants import Constants as cs
@@ -42,7 +41,7 @@ class Deck:
 
         for val in Value.allowed:
             if num_jokers == 0 and val != cs.JOKER:
-                for suit in Suits.allowed:
+                for suit in cs.suits:
                     self.cards.append(Card(value=val, suit=suit))
             elif num_jokers > 0 and val == cs.JOKER:
                 for i in range(num_jokers):
@@ -59,7 +58,7 @@ class Deck:
         allwd_val = {cs.NINE, cs.TEN, cs.JACK, cs.QUEEN, cs.KING, cs.ACE}
 
         for val in allwd_val:
-            for suit in Suits.allowed:
+            for suit in cs.suits:
                 self.cards.append(Card(value=val, suit=suit))
                 self.cards.append(Card(value=val, suit=suit))
 

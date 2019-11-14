@@ -4,6 +4,7 @@ class Constants:
     CLUBS = "CLUBS"
     SPADES = "SPADES"
     DIAMONDS = "DIAMONDS"
+    SUITS = (HEARTS, CLUBS, SPADES, DIAMONDS)
 
     # Values
     TWO = "TWO"

@@ -66,15 +66,18 @@ class State:
         device = cfg.DQN_params['device'] if device is None else device
         return torch.from_numpy(arr).type(torch.float32).to(device)
 
-    def get_valid_action_mask(self, player, is_hand):
+    def get_valid_action_mask(self, player, is_trick):
         """
         Returns a boolean tensor mask that only allows valid action indices
         Assumes first num_action indices are the player's hand
         :param player: Player of interest
-        :param is_hand: Whether this is a hand or meld action (boolean, True if hand, False if meld)
+        :param is_trick: Whether this is a hand or meld action (boolean, True if hand, False if meld)
         :return: Boolean Tensor
         """
-        if is_hand:
+        if is_trick:
             return self.get_player_state_as_tensor(player)[:cfg.num_actions] > 0
-        else:  # Meld
-            raise NotImplementedError
+        else:
+            # TODO
+            # go reverse: for each possible combination check if hand has cards for it
+            # apply list_to_dict magic on hand for O(1)
+            pass
