@@ -12,7 +12,7 @@ class Card:
         if self.value == cs.JOKER:
             assert self.suit is None, "Joker should have suit of None."
         else:
-            assert self.suit in cs.suits, "Please use a valid suit."
+            assert self.suit in cs.SUITS, "Please use a valid suit."
 
         assert self.value in Value.allowed, "Please use a valid value."
 

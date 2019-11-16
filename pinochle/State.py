@@ -80,4 +80,11 @@ class State:
             # TODO
             # go reverse: for each possible combination check if hand has cards for it
             # apply list_to_dict magic on hand for O(1)
+            player
+            combinations_vector = vs.MELD_COMBINATIONS_ONE_HOT_VECTOR
+
+            for combo in combinations_vector:
+
+
+
             pass

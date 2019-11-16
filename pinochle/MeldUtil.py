@@ -43,7 +43,7 @@ class MeldUtil:
         for value in [(cs.ACE, 100), (cs.KING, 80), (cs.QUEEN, 60), (cs.JACK, 40, "B")]:
             list_around = []
 
-            for suit in cs.suits:
+            for suit in cs.SUITS:
                 list_around.append(Card(value[0], suit))
 
             self.combinations[value[0] + "_AROUND"] = (list_to_dict(list_around), value[1], "B")
