@@ -16,7 +16,7 @@ from config import Config as cfg
 import pinochle.card_util as cu
 import time
 import pandas as pd
-import util.db as db
+from util.Vectors import Vectors as vs
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
@@ -166,8 +166,14 @@ class Game:
                     self.hands[player] = original_hand_cards
                     self.melds[player] = original_meld_cards
         else:  # Bot
-            action = player.get_action(state, current_cycle=self.current_cycle, is_trick=False)
-            user_input = player.convert_model_output(output_index=action, game=self, is_trick=False)
+            valid = True
+            trick_action, meld_action = player.get_action(state, current_cycle=self.current_cycle, is_trick=False)
+
+            if meld_action == vs.MELD_COMBINATIONS_ONE_HOT_VECTOR.__len__():
+                # model chose to pass melding
+                return [], valid
+
+            user_input = player.convert_model_output(trick_index=trick_action, meld_index=meld_action, game=self, is_trick=False)
 
         return [MeldTuple(card, combo_name, meld_class, score) for card in collected_cards], valid
 

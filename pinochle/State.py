@@ -5,6 +5,7 @@ import logging
 from config import Config as cfg
 import torch
 import util.vector_builder as vb
+from pinochle.MeldUtil import MeldUtil
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 """
@@ -71,20 +72,26 @@ class State:
         Returns a boolean tensor mask that only allows valid action indices
         Assumes first num_action indices are the player's hand
         :param player: Player of interest
-        :param is_trick: Whether this is a hand or meld action (boolean, True if hand, False if meld)
-        :return: Boolean Tensor
+        :param is_trick: false represents that the player won the trick thus it will collect the following trick and meld action
+        :return: two boolean tensors
         """
-        if is_trick:
-            return self.get_player_state_as_tensor(player)[:cfg.num_actions] > 0
+
+        trick_tensor = self.get_player_state_as_tensor(player)[:cfg.num_actions] > 0
+
+        if not is_trick:
+            meld_tensor = torch.zeros(vs.MELD_COMBINATIONS_ONE_HOT_VECTOR.__len__(), dtype=torch.uint8)
+            hand = self.game.hands[player]
+            meld = self.game.melds[player]
+            meld_util = MeldUtil(self.game.trump)
+            combinations_data = meld_util.combinations
+
+            for i, combo_name in enumerate(combinations_data.keys()):
+                meld_tensor[i] = meld_util.is_valid_meld(hand, meld, combo_name)
+
+            # pass is always a valid action, concatenating it at the end of the meld tensor
+            meld_pass_tensor = torch.ones(1, dtype=torch.uint8)
+            torch.cat((meld_tensor, meld_pass_tensor))
         else:
-            # TODO
-            # go reverse: for each possible combination check if hand has cards for it
-            # apply list_to_dict magic on hand for O(1)
-            player
-            combinations_vector = vs.MELD_COMBINATIONS_ONE_HOT_VECTOR
+            meld_tensor = None
 
-            for combo in combinations_vector:
-
-
-
-            pass
+        return trick_tensor, meld_tensor

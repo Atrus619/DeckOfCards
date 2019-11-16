@@ -2,6 +2,7 @@ from util.util import *
 from classes.Card import Card
 from util.Constants import Constants as cs
 from collections import OrderedDict
+from copy import deepcopy
 
 
 class MeldUtil:
@@ -54,4 +55,50 @@ class MeldUtil:
 
         double_pinochle_list = pinochle_list + pinochle_list
         self.combinations["DOUBLE_PINOCHLE"] = (list_to_dict(double_pinochle_list), 300, "C")
+
+    def is_valid_meld(self, hand, meld, combo_name):
+        combo_cards_dict = self.combinations[combo_name][0]
+        combo_score = self.combinations[combo_name][1]
+        combo_class = self.combinations[combo_name][2]
+        hand_card_present = False
+        hand_copy = deepcopy(hand)
+        meld_copy = deepcopy(meld)
+
+        for card, count in combo_cards_dict.items():
+            # only loop twice for double pinochle
+            for i in range(count):
+                # check card presence in hand because one card has to come from hand
+                if card in hand:
+                    hand_card_present = True
+                    hand_copy.pull_card(card)
+                    continue
+
+                # if not present in hand, check meld
+                meld_tuple = meld_copy.is_card_present(card)
+                if meld_tuple:
+                    # removing this card from further consideration
+                    meld_copy.pull_melded_card(meld_tuple)
+                    if meld_tuple.meld_class != combo_class or meld_tuple.score < combo_score:
+                        # meld is valid if class is different or score is higher
+                        continue
+                    else:
+                        # if first pulled card from meld does not satisfy meld requirements,
+                        # check if a second, same card exists and satisfies requirements
+                        meld_tuple = meld_copy.is_card_present(card)
+                        meld_copy.pull_melded_card(meld_tuple)
+                        if meld_tuple.meld_class != combo_class or meld_tuple.score < combo_score:
+                            continue
+
+                return False
+
+        return hand_card_present
+
+    def generate_combo(self, hand, meld, combo_name):
+        # TODO: need to figure out AGAIN what cards to use when creating combo for a bot (hand or meld)
+        # this seems to be very similar to the above function, need to figure out how to optimize
+        # we should try to use the meld card first in meld
+        pass
+
+
+
 

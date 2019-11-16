@@ -25,9 +25,9 @@ class Agent(Player):
         if random.random() > epsilon:
             return self.model.get_legal_action(state=state, player=self, game=game, is_trick=is_trick) if is_trick else None
         else:
-            return self.random_bot.get_legal_action(state=state, player=self)
+            return self.random_bot.get_legal_action(state=state, player=self, game=game, is_trick=is_trick)
 
-    def convert_model_output(self, output_index, game, is_trick=True):
+    def convert_model_output(self, trick_index, meld_index, game, is_trick=True):
         """
         Converts the model output to a format readable by game
         :param output_index: Integer corresponding to the selected output from the bot. Should map to a specific card's index in a one hot vector.
@@ -35,16 +35,20 @@ class Agent(Player):
         :param is_trick: If false, then meld implied
         :return: Game expected input
         """
-        if not is_trick:  # TODO: Remove this later, it is a simplification to skip melding
-            return 'Y'
-
-        selected_card = self.one_hot_template[output_index]
-
-        leading_char = 'H' if is_trick else 'M'
+        trick_output = None
+        selected_card = self.one_hot_template[trick_index]
 
         for card in game.hands[self]:
             if selected_card == card:
-                return leading_char + str(game.hands[self].cards.index(card))
+                trick_output = 'H' + str(game.hands[self].cards.index(card))
+                break
+
+        if is_trick:
+            return trick_output, None
+
+        combo_name = vs.MELD_COMBINATIONS_ONE_HOT_VECTOR[meld_index]
+
+
 
     def set_model(self, model):
         self.model = model

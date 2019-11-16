@@ -41,21 +41,33 @@ class DQN:
         self.loss = []
 
     def get_legal_action(self, state, player, game, is_trick):
+        """
+        :param state:
+        :param player:
+        :param game:
+        :param is_trick: false represents that the player won the trick thus it will collect the following trick and meld action
+        :return:
+        """
         # Picks the highest output legal action, ignoring illegal actions
-        valid_action_mask = state.get_valid_action_mask(player=player, is_trick=is_trick)
-        invalid_action_mask = (valid_action_mask == 0).nonzero()
-        initial_action_tensor = self.policy_net(state.get_player_state_as_tensor(player=player))
-
-        # Setting to large negative number to deal with ties.
-        # If an invalid option and a valid option had the same value, it could choose the invalid option, leading to a downstream error.
-        initial_action_tensor[invalid_action_mask] = -999
+        valid_trick_mask, valid_meld_mask = state.get_valid_action_mask(player=player, is_trick=is_trick)
+        initial_trick_action_tensor, initial_meld_action_tensor = \
+            self.policy_net(state.get_player_state_as_tensor(player=player))
 
         if game.human_test:
-            self.print_decision_logic(initial_action_tensor=initial_action_tensor, player=player, game=game)
+            self.print_decision_logic(initial_action_tensor=initial_trick_action_tensor, player=player, game=game)
 
-        best_valid_action_prob = initial_action_tensor[valid_action_mask.nonzero()].max()
+        return self.get_best_masked_action(initial_trick_action_tensor, valid_trick_mask), \
+            self.get_best_masked_action(initial_meld_action_tensor, valid_meld_mask)
 
-        return (initial_action_tensor == best_valid_action_prob).nonzero()[0].item()
+    def get_best_masked_action(self, tensor, mask):
+        # Setting to large negative number to deal with ties.
+        # If an invalid option and a valid option had the same value, it could choose the invalid option, leading to a downstream error.
+        invalid_mask = (mask == 0).nonzero()
+        tensor[invalid_mask] = -999
+
+        best_valid_action_prob = tensor[mask.nonzero()].max()
+
+        return (tensor == best_valid_action_prob).nonzero()[0].item()
 
     def train_one_batch(self, states, actions, next_states, rewards, store_history):
         action_indices = actions.argmax(dim=1).unsqueeze(1)

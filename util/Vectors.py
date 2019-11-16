@@ -6,6 +6,5 @@ from util.Constants import Constants as cs
 class Vectors:
     PINOCHLE_ONE_HOT_VECTOR = Deck('pinochle').return_sorted_deck()
 
-    MELD_COMBINATIONS_ONE_HOT_VECTOR = {}
-    for suit in cs.SUITS:
-        MELD_COMBINATIONS_ONE_HOT_VECTOR[suit] = MeldUtil(suit).combinations.keys()
+    # the suit makes no difference here since combinations are now suit agnostic
+    MELD_COMBINATIONS_ONE_HOT_VECTOR = MeldUtil(cs.HEARTS).combinations.keys()
