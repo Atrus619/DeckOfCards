@@ -25,7 +25,9 @@ class Config:
     epsilon_decrement = 0.005  # for get_epsilon_constant_decrement func
 
     # State-Action
-    state_size = 77  # Length of state vector: [hand=24, score_diff_vector=1, trump_vector=4, discard_vector=24, played_card_vector=24]
+    # Length of state vector: [hand=24, score_diff_vector=1, trump_vector=4, discard_vector=24,
+    # played_card_vector=24, played_meld_vector=24, oppponent_meld_vector=24]
+    state_size = 125
     num_actions = 24  # Length of action vector
 
     # Benchmark Parameters

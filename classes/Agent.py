@@ -2,6 +2,7 @@ from classes.Player import Player
 from util.Vectors import Vectors as vs
 import random
 from pinochle.scripted_bots.RandomBot import RandomBot
+from pinochle.MeldUtil import MeldUtil
 
 
 class Agent(Player):
@@ -47,8 +48,7 @@ class Agent(Player):
             return trick_output, None
 
         combo_name = vs.MELD_COMBINATIONS_ONE_HOT_VECTOR[meld_index]
-
-
+        return MeldUtil.generate_combo(game.hands[self], game.melds[self], combo_name)
 
     def set_model(self, model):
         self.model = model

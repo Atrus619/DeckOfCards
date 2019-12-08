@@ -117,6 +117,7 @@ class Game:
 
         if type(player).__name__ == 'Human':
             while len(collected_hand_cards) + len(collected_meld_cards) < limit:
+                # TODO: move this to meld util so it resides in the same class as the model implementation
 
                 if first_hand_card:
                     print_divider()
@@ -173,7 +174,8 @@ class Game:
                 # model chose to pass melding
                 return [], valid
 
-            user_input = player.convert_model_output(trick_index=trick_action, meld_index=meld_action, game=self, is_trick=False)
+            score, meld_class, combo_name, collected_cards = \
+                player.convert_model_output(trick_index=trick_action, meld_index=meld_action, game=self, is_trick=False)
 
         return [MeldTuple(card, combo_name, meld_class, score) for card in collected_cards], valid
 

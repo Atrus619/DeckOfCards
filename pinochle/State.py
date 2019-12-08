@@ -24,14 +24,15 @@ class State:
         self.scores_vector = np.array((self.game.scores[self.game.players[0]][-1], self.game.scores[self.game.players[1]][-1]))
         self.player1_hand_vector = vb.build_hand_vector(self.game.hands[self.game.players[0]])
         self.player2_hand_vector = vb.build_hand_vector(self.game.hands[self.game.players[1]])
+        self.player1_meld_vector = vb.build_meld_cards_vector(self.game.melds[self.game.players[0]])
+        self.player2_meld_vector = vb.build_meld_cards_vector(self.game.melds[self.game.players[1]])
         self.discard_vector = vb.build_hand_vector(self.game.discard_pile)
         self.trump_vector = vb.build_trump_vector(self.game.trump)
         self.played_card_vector = vb.build_card_vector(played_card)
 
-        """
-        ALWAYS HAVE PLAYER 1 AND PLAYER 2 HAND AT THE BEGINNING OF THE STATE
-        """
-        self.global_state = np.concatenate((self.scores_vector, self.player1_hand_vector, self.player2_hand_vector, self.trump_vector, self.discard_vector, self.played_card_vector), axis=0)
+        self.global_state = np.concatenate((self.scores_vector, self.player1_hand_vector, self.player1_meld_vector,
+                                            self.player2_hand_vector, self.player2_meld_vector,
+                                            self.trump_vector, self.discard_vector, self.played_card_vector), axis=0)
 
     def convert_to_human_readable_format(self, player):
         print_divider()
@@ -57,10 +58,18 @@ class State:
         player_index = self.game.players.index(player)
 
         score_info = np.array((self.global_state[player_index] - self.global_state[1 - player_index])).reshape(-1)
-        player_hand = self.global_state[2 + player_index * len(self.one_hot_template):2 + (player_index + 1) * len(self.one_hot_template)]
-        global_info = self.global_state[2 + 2 * len(self.one_hot_template):]
 
-        return np.concatenate((player_hand, score_info, global_info), axis=0)
+        player_info_start = 2 + player_index * len(self.one_hot_template) * 2
+        player_info_stop = 2 + (player_index + 1) * len(self.one_hot_template) * 2
+        player_info = self.global_state[player_info_start:player_info_stop]
+
+        opponent_info_start = 2 + ((1 - player_index) * 2 + 1) * len(self.one_hot_template)
+        opponent_info_stop = 2 + ((1 - player_index) * 2 + 2) * len(self.one_hot_template)
+        opponent_info = self.global_state[opponent_info_start:opponent_info_stop]
+
+        global_info = self.global_state[2 + 2 * 2 * len(self.one_hot_template):]
+
+        return np.concatenate((player_info, opponent_info, score_info, global_info), axis=0)
 
     def get_player_state_as_tensor(self, player, device=None):
         arr = self.get_player_state(player)

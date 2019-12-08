@@ -94,11 +94,66 @@ class MeldUtil:
         return hand_card_present
 
     def generate_combo(self, hand, meld, combo_name):
-        # TODO: need to figure out AGAIN what cards to use when creating combo for a bot (hand or meld)
-        # this seems to be very similar to the above function, need to figure out how to optimize
-        # we should try to use the meld card first in meld
-        pass
+        """
 
+        :param hand:
+        :param meld:
+        :param combo_name:
+        :return:
+        Modifies hand and meld and returns the list of cards that will create the new combo
+        """
+        combo_cards_dict = self.combinations[combo_name][0]
+        combo_score = self.combinations[combo_name][1]
+        combo_class = self.combinations[combo_name][2]
+        meld_copy = deepcopy(meld)
+        meld_cards = []
+        hand_cards = []
 
+        for card, count in combo_cards_dict.items():
+            # only loop twice for double pinochle
+            for i in range(count):
+                # check meld
+                meld_tuple = meld_copy.is_card_present(card)
+                if meld_tuple:
+                    # removing this card from further consideration
+                    meld_copy.pull_melded_card(meld_tuple)
+                    if meld_tuple.meld_class != combo_class or meld_tuple.score < combo_score:
+                        # meld is valid if class is different or score is higher
+                        meld_cards.append(meld_tuple[0])
+                        continue
+                    else:
+                        # if first pulled card from meld does not satisfy meld requirements,
+                        # check if a second, same card exists and satisfies requirements
+                        meld_tuple = meld_copy.is_card_present(card)
+                        meld_copy.pull_melded_card(meld_tuple)
+                        if meld_tuple.meld_class != combo_class or meld_tuple.score < combo_score:
+                            meld_cards.append(meld_tuple[0])
+                            continue
 
+                hand_cards.append(card)
+
+        # check if there are no hand cards present so far
+        # if none present, take a card from meld
+        if hand_cards.__len__():
+            for card in meld_cards:
+                if card in hand:
+                    hand_cards.append(card)
+                    meld_cards.remove(card)
+                    break
+
+        # reset meld copy, remove final list of meld cards
+        meld_copy = deepcopy(meld)
+        for card in meld_cards:
+            card_id = id(card)
+
+            for mt in meld_copy:
+                if card_id == id(mt[0]):
+                    meld.pull_melded_card(mt)
+
+        hand.drop_cards(hand_cards)
+
+        collected_cards = hand_cards + meld_cards
+        score, meld_class, combo_name = self.calculate_score(collected_cards)
+
+        return score, meld_class, combo_name, collected_cards
 
