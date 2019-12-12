@@ -71,3 +71,7 @@ def build_meld_cards_vector(mt_list):
         output += build_card_vector(meld_tuple[0].card)
 
     return output
+
+
+def build_meld_mask_vector():
+    return np.full(len(vs.PINOCHLE_ONE_HOT_VECTOR), -1)
