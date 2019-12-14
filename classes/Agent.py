@@ -24,7 +24,7 @@ class Agent(Player):
         """
         epsilon = self.epsilon.get_epsilon(current_cycle=current_cycle)
         if random.random() > epsilon:
-            return self.model.get_legal_action(state=state, player=self, game=game, is_trick=is_trick) if is_trick else None
+            return self.model.get_legal_action(state=state, player=self, game=game, is_trick=is_trick)
         else:
             return self.random_bot.get_legal_action(state=state, player=self, game=game, is_trick=is_trick)
 
@@ -48,7 +48,7 @@ class Agent(Player):
             return trick_output, None
 
         combo_name = vs.MELD_COMBINATIONS_ONE_HOT_VECTOR[meld_index]
-        return MeldUtil.generate_combo(game.hands[self], game.melds[self], combo_name)
+        return game.meld_util.generate_combo(game.hands[self], game.melds[self], combo_name)
 
     def set_model(self, model):
         self.model = model

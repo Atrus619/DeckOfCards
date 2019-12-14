@@ -12,13 +12,14 @@ class RandomBot:
         :return: Value corresponding to action index of vector corresponding to hand
         """
         viable_trick_one_hot_vectors, viable_meld_one_hot_vectors = state.get_valid_action_mask(player, is_trick)
+        viable_trick_one_hot_vectors = viable_trick_one_hot_vectors.cpu().numpy()
         trick_index = np.random.choice(np.where(viable_trick_one_hot_vectors > 0)[0])
-
 
         if is_trick:
             return trick_index, None
 
-        viable_meld_indices = np.where(viable_trick_one_hot_vectors > 0)[0]
+        viable_meld_one_hot_vectors = viable_meld_one_hot_vectors.cpu().numpy()
+        viable_meld_indices = np.where(viable_meld_one_hot_vectors > 0)[0]
 
         if len(viable_meld_indices) > 0:
             return trick_index, np.random.choice(viable_meld_indices)

@@ -39,6 +39,7 @@ class Game:
         self.config = config
         self.exp_df = pd.DataFrame(columns=['agent_id', 'opponent_id', 'run_id', 'vector', 'action', 'next_vector',
                                             'reward', 'meld_action'])
+        self.last_meld_state = None
 
         if self.name == cs.PINOCHLE:
             self.deck = Deck("pinochle")
@@ -81,10 +82,10 @@ class Game:
                 logging.debug("Model hand before action:")
                 state.convert_to_human_readable_format(player)
 
-            action = player.get_action(state, self, current_cycle=self.current_cycle, is_trick=True)
-            user_input = player.convert_model_output(output_index=action, game=self, is_trick=True)
-        source = user_input[0]
-        index = int(user_input[1:])
+            trick_index, meld_index = player.get_action(state, self, current_cycle=self.current_cycle, is_trick=True)
+            trick_input, _ = player.convert_model_output(trick_index=trick_index, meld_index=meld_index, game=self, is_trick=True)
+        source = trick_input[0]
+        index = int(trick_input[1:])
 
         if source == "H":
             card_input = self.hands[player].cards[index]
@@ -169,7 +170,7 @@ class Game:
                     self.melds[player] = original_meld_cards
         else:  # Bot
             valid = True
-            trick_action, meld_action = player.get_action(state, current_cycle=self.current_cycle, is_trick=False)
+            trick_action, meld_action = player.get_action(state, self, current_cycle=self.current_cycle, is_trick=False)
 
             if meld_action == vs.MELD_COMBINATIONS_ONE_HOT_VECTOR.__len__():
                 # model chose to pass melding
@@ -262,11 +263,11 @@ class Game:
         logging.debug(winner.name + " select cards for meld:")
 
         # Verify that meld is valid. If meld is invalid, force the user to retry.
-        meld_state = self.create_state()
+        self.last_meld_state = self.create_state()
         mt_list = []
         # no melding in this version
         while 1:
-            mt_list, valid = self.collect_meld_cards(winner, meld_state)
+            mt_list, valid = self.collect_meld_cards(winner, self.last_meld_state)
             if valid:
                 break
             else:
@@ -317,8 +318,11 @@ class Game:
             p2_update_dict = {'player': self.players[1], 'state_1': self.player_inter_trick_history[self.players[1]][0], 'state_2': end_game_state,
                               'row_id': self.player_inter_trick_history[self.players[1]][1]}
 
-            #TODO: UPDATE FIRST AND LAST ROUND TO HANDLE EDGE CASES FOR MELDING
-            self.exp_df = sl.update_state(df=self.exp_df, p1=p1_update_dict, p2=p2_update_dict, winner=self.players[winner_index], win_reward=self.config.win_reward)
+            self.exp_df = sl.update_state(df=self.exp_df, p1=p1_update_dict, p2=p2_update_dict, winner=self.players[winner_index], win_reward=self.config.win_reward,
+                                          final_trick_winner=self.players[self.priority])
+            self.exp_df = sl.log_final_meld(df=self.exp_df, meld_state=self.last_meld_state, history=self.player_inter_trick_history,
+                                            final_trick_winner=self.players[self.priority], end_game_state=end_game_state, run_id=self.run_id,
+                                            winner=self.players[winner_index], win_reward=self.config.win_reward)
 
         print_divider()
         logging.debug("Winner: " + str(self.players[winner_index]) + "\tScore: " + str(final_scores[winner_index]))

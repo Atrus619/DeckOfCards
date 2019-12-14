@@ -75,3 +75,7 @@ def build_meld_cards_vector(mt_list):
 
 def build_meld_mask_vector():
     return np.full(len(vs.PINOCHLE_ONE_HOT_VECTOR), -1)
+
+
+def build_trick_mask_vector():
+    return np.full(len(vs.PINOCHLE_ONE_HOT_VECTOR), -1)

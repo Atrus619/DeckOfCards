@@ -17,13 +17,13 @@ import visualize.visualize as viz
 import pipeline.benchmark as bench
 
 import pipeline.experiment as exp
-util.clear_run('TEST')
-exp.run_full_experiment(config=cfg)
+# util.clear_run('TEST')
+# exp.run_full_experiment(config=cfg)
 #
 # viz.plot_diagnostic_plots('No_Gamma')
 
 epsilon = Epsilon('eval')
-player_1 = Agent(name=cfg.expert_policy_bot_name, model=ExpertPolicy(), epsilon=epsilon)
+player_1 = Agent(name=cfg.random_bot_name, model=RandomBot(), epsilon=epsilon)
 player_2 = Agent(name=cfg.random_bot_name, model=RandomBot(), epsilon=epsilon)
 
 player_list = [player_1, player_2]
@@ -32,6 +32,8 @@ player_list = [player_1, player_2]
 game = Game(name=cfg.game, players=player_list, run_id='TEST', current_cycle=None)
 game.deal()
 game.play()
+
+import pdb; pdb.pm()
 
 bench.benchmark_test(RandomBot(), ExpertPolicy(), 50)
 
