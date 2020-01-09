@@ -37,7 +37,7 @@ class Meld:
     def clear_meld(self):
         self.melded_cards = []
 
-    def is_card_present(self, card):
+    def get_mt_if_card_present(self, card):
         for mt in self.melded_cards:
             if card == mt.card:
                 return mt

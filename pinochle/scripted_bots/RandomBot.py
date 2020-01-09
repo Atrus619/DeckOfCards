@@ -24,7 +24,7 @@ class RandomBot:
         if len(viable_meld_indices) > 0:
             return trick_index, np.random.choice(viable_meld_indices)
 
-        return
+        return trick_index, None  # Ironic None... ;)
 
     def train_self(self, num_epochs):
         pass

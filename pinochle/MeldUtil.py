@@ -68,13 +68,13 @@ class MeldUtil:
             # only loop twice for double pinochle
             for i in range(count):
                 # check card presence in hand because one card has to come from hand
-                if card in hand:
+                if card in hand_copy:
                     hand_card_present = True
                     hand_copy.pull_card(card)
                     continue
 
                 # if not present in hand, check meld
-                meld_tuple = meld_copy.is_card_present(card)
+                meld_tuple = meld_copy.get_mt_if_card_present(card)
                 if meld_tuple:
                     # removing this card from further consideration
                     meld_copy.pull_melded_card(meld_tuple)
@@ -84,10 +84,11 @@ class MeldUtil:
                     else:
                         # if first pulled card from meld does not satisfy meld requirements,
                         # check if a second, same card exists and satisfies requirements
-                        meld_tuple = meld_copy.is_card_present(card)
-                        meld_copy.pull_melded_card(meld_tuple)
-                        if meld_tuple.meld_class != combo_class or meld_tuple.score < combo_score:
-                            continue
+                        meld_tuple = meld_copy.get_mt_if_card_present(card)
+                        if meld_tuple:
+                            meld_copy.pull_melded_card(meld_tuple)
+                            if meld_tuple.meld_class != combo_class or meld_tuple.score < combo_score:
+                                continue
 
                 return False
 
@@ -95,7 +96,6 @@ class MeldUtil:
 
     def generate_combo(self, hand, meld, combo_name):
         """
-
         :param hand:
         :param meld:
         :param combo_name:
@@ -113,22 +113,23 @@ class MeldUtil:
             # only loop twice for double pinochle
             for i in range(count):
                 # check meld
-                meld_tuple = meld_copy.is_card_present(card)
+                meld_tuple = meld_copy.get_mt_if_card_present(card)
                 if meld_tuple:
                     # removing this card from further consideration
                     meld_copy.pull_melded_card(meld_tuple)
                     if meld_tuple.meld_class != combo_class or meld_tuple.score < combo_score:
                         # meld is valid if class is different or score is higher
-                        meld_cards.append(meld_tuple[0])
+                        meld_cards.append(meld_tuple.card)
                         continue
                     else:
                         # if first pulled card from meld does not satisfy meld requirements,
                         # check if a second, same card exists and satisfies requirements
-                        meld_tuple = meld_copy.is_card_present(card)
-                        meld_copy.pull_melded_card(meld_tuple)
-                        if meld_tuple.meld_class != combo_class or meld_tuple.score < combo_score:
-                            meld_cards.append(meld_tuple[0])
-                            continue
+                        meld_tuple = meld_copy.get_mt_if_card_present(card)
+                        if meld_tuple:
+                            meld_copy.pull_melded_card(meld_tuple)
+                            if meld_tuple.meld_class != combo_class or meld_tuple.score < combo_score:
+                                meld_cards.append(meld_tuple.card)
+                                continue
 
                 hand_cards.append(card)
 
@@ -146,8 +147,8 @@ class MeldUtil:
         for card in meld_cards:
             card_id = id(card)
 
-            for mt in meld_copy:
-                if card_id == id(mt[0]):
+            for mt in meld_copy.melded_cards:
+                if card_id == id(mt.card):
                     meld.pull_melded_card(mt)
 
         hand.drop_cards(hand_cards)

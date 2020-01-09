@@ -23,11 +23,11 @@ import pipeline.experiment as exp
 # viz.plot_diagnostic_plots('No_Gamma')
 
 epsilon = Epsilon('eval')
-player_1 = Agent(name=cfg.random_bot_name, model=RandomBot(), epsilon=epsilon)
-player_2 = Agent(name=cfg.random_bot_name, model=RandomBot(), epsilon=epsilon)
+player_1 = Agent(name=cfg.random_bot_name + '1', model=RandomBot(), epsilon=epsilon)
+player_2 = Agent(name=cfg.random_bot_name + '2', model=RandomBot(), epsilon=epsilon)
 
 player_list = [player_1, player_2]
-
+# TODO: Fix up the neeyural nutwerkz to have 2 heads.
 
 game = Game(name=cfg.game, players=player_list, run_id='TEST', current_cycle=None)
 game.deal()

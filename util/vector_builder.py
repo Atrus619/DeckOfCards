@@ -68,7 +68,7 @@ def build_meld_cards_vector(mt_list):
 
     output = np.zeros(len(vs.PINOCHLE_ONE_HOT_VECTOR))
     for meld_tuple in mt_list:
-        output += build_card_vector(meld_tuple[0].card)
+        output += build_card_vector(meld_tuple.card)
 
     return output
 

@@ -81,13 +81,28 @@ def update_state(df, p1, p2, win_reward, winner=None, final_trick_winner=None):
     Winner is only used if the game is over and it specifies the player object that won the entire game
     final_trick_winner is defaulted to None. It only contains a value on the final trick to determine whether to apply the end game reward bonus
     """
-    p1_next_state_vector = ",".join([str(x) for x in p1['state_2'].get_player_state(p1['player'])]) if p1['player'] == final_trick_winner else cfg.terminal_state
-    p2_next_state_vector = ",".join([str(x) for x in p2['state_2'].get_player_state(p2['player'])]) if p2['player'] == final_trick_winner else cfg.terminal_state
 
-    p1_reward = util.get_reward(player=p1['player'], state_1=p1['state_1'], state_2=p1['state_2'], winner=winner if p1['player'] != final_trick_winner else None,
-                                win_reward=win_reward)
-    p2_reward = util.get_reward(player=p2['player'], state_1=p2['state_1'], state_2=p2['state_2'], winner=winner if p2['player'] != final_trick_winner else None,
-                                win_reward=win_reward)
+    # By default, assume no winner and assign next state vector and reward
+    p1_next_state_vector = ",".join([str(x) for x in p1['state_2'].get_player_state(p1['player'])])
+    p2_next_state_vector = ",".join([str(x) for x in p2['state_2'].get_player_state(p2['player'])])
+
+    p1_reward = util.get_reward(player=p1['player'], state_1=p1['state_1'], state_2=p1['state_2'], winner=None, win_reward=win_reward)
+    p2_reward = util.get_reward(player=p2['player'], state_1=p2['state_1'], state_2=p2['state_2'], winner=None, win_reward=win_reward)
+
+    """    
+    If this is the end of the game, do two things:
+        1. Assign the player who is not the final trick winner the terminal state. The final trick winner has one additional state, their final meld. See log_final_meld().
+        2. Assign the player who is not the final trick winner the end game reward / punishment. The end game reward / punishment will be applied to the final trick winner
+        in their final meld state.
+    """
+    if winner is not None:
+        p1_next_state_vector = p1_next_state_vector if p1['player'] == final_trick_winner else cfg.terminal_state
+        p2_next_state_vector = p2_next_state_vector if p2['player'] == final_trick_winner else cfg.terminal_state
+
+        p1_reward = util.get_reward(player=p1['player'], state_1=p1['state_1'], state_2=p1['state_2'],
+                                    winner=winner if p1['player'] != final_trick_winner else None, win_reward=win_reward)
+        p2_reward = util.get_reward(player=p2['player'], state_1=p2['state_1'], state_2=p2['state_2'],
+                                    winner=winner if p2['player'] != final_trick_winner else None, win_reward=win_reward)
 
     df.loc[[p1['row_id'], p2['row_id']], ['next_vector', 'reward']] = [[p1_next_state_vector, p1_reward],
                                                                        [p2_next_state_vector, p2_reward]]
@@ -109,11 +124,15 @@ def log_final_meld(df, meld_state, history, final_trick_winner, end_game_state, 
 
     reward = util.get_reward(final_trick_winner, meld_state, end_game_state, win_reward=win_reward, winner=winner)
 
-    df2 = pd.DataFrame([
-        [final_trick_winner.name, opponent.name, run_id, state_vector, trick_action_vector,
-         meld_action_vector, cfg.terminal_state]
-    ],
-        columns=['agent_id', 'opponent_id', 'run_id', 'vector', 'action', 'meld_action', 'next_vector', 'reward'])
+    df2 = pd.DataFrame(
+        [
+            [
+                final_trick_winner.name, opponent.name, run_id, state_vector, trick_action_vector,
+                meld_action_vector, cfg.terminal_state, reward
+            ]
+        ],
+        columns=['agent_id', 'opponent_id', 'run_id', 'vector', 'action', 'meld_action', 'next_vector', 'reward']
+    )
 
     df = df.append(df2, sort=False, ignore_index=True)
 

@@ -84,8 +84,17 @@ class State:
         :param is_trick: false represents that the player won the trick thus it will collect the following trick and meld action
         :return: two boolean tensors
         """
+        player_index = self.game.players.index(player)
+        if player_index == 0:
+            hand_vector = self.player1_hand_vector
+            meld_vector = self.player1_meld_vector
+        else:
+            hand_vector = self.player2_hand_vector
+            meld_vector = self.player2_meld_vector
 
-        trick_tensor = self.get_player_state_as_tensor(player)[:cfg.num_actions] > 0
+        trick_vector = hand_vector + meld_vector
+        device = cfg.DQN_params['device']
+        trick_tensor = torch.from_numpy(trick_vector).type(torch.float32).to(device) > 0
 
         if not is_trick:
             meld_tensor = torch.zeros(vs.MELD_COMBINATIONS_ONE_HOT_VECTOR.__len__(), dtype=torch.uint8)
@@ -99,7 +108,7 @@ class State:
 
             # pass is always a valid action, concatenating it at the end of the meld tensor
             meld_pass_tensor = torch.ones(1, dtype=torch.uint8)
-            torch.cat((meld_tensor, meld_pass_tensor))
+            meld_tensor = torch.cat((meld_tensor, meld_pass_tensor))
         else:
             meld_tensor = None
 
