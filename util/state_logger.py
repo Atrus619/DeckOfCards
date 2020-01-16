@@ -1,8 +1,8 @@
-import util.db as db
 from config import Config as cfg
 import util.vector_builder as vb
 import util.util as util
 import pandas as pd
+import copy
 
 
 # TODO: We may want to consider making this part of game.py
@@ -32,11 +32,11 @@ def log_state(df, p1, p2, meld, run_id, history):
     player_2_action_vector = ",".join([str(x) for x in vb.build_card_vector(p2['card'])])
 
     meld_vector = ",".join([str(x) for x in vb.build_meld_cards_vector(meld["meld"])])
-    meld_mask = vb.build_meld_mask_vector()
+    meld_mask = ",".join([str(x) for x in vb.build_meld_mask_vector()])
 
     if p1['player'] not in history:
-        p1_meld_action = meld_mask.copy()
-        p2_meld_action = meld_mask.copy()
+        p1_meld_action = copy.copy(meld_mask)
+        p2_meld_action = copy.copy(meld_mask)
     else:
         p1_meld_action = history[p1['player']][2]
         p2_meld_action = history[p2['player']][2]

@@ -43,10 +43,12 @@ class DQN_FCNet(nn.Module):
         for i, (name, layer) in enumerate(self.architecture.items()):
             if i == 0:
                 x = self.act_fn(layer(states))
-            elif i < (len(self.architecture) - 1):
+            elif i < (len(self.architecture) - 2):
                 x = self.act_fn(layer(x))
             else:
-                return layer(x)  # No activation
+                break
+
+        return self.architecture['fc_out_trick_head'](x), self.architecture['fc_out_meld_head'](x)
 
     def assemble_architecture(self):
         """
@@ -57,7 +59,8 @@ class DQN_FCNet(nn.Module):
         for i in range(1, self.num_layers - 1):
             self.architecture['fc_' + str(i + 1)] = nn.Linear(in_features=self.hidden_units_per_layer, out_features=self.hidden_units_per_layer, bias=True)
 
-        self.architecture['fc_out'] = nn.Linear(in_features=self.hidden_units_per_layer, out_features=self.num_actions, bias=True)
+        self.architecture['fc_out_trick_head'] = nn.Linear(in_features=self.hidden_units_per_layer, out_features=self.num_actions, bias=True)
+        self.architecture['fc_out_meld_head'] = nn.Linear(in_features=self.hidden_units_per_layer, out_features=self.num_actions, bias=True)
 
     def assemble_modules(self):
         for name, layer in self.architecture.items():

@@ -188,14 +188,16 @@ def get_reward(player, state_1, state_2, win_reward, winner=None):
     :param winner: If None, game is not over. If not None, specifies the player object who won the entire game
     :return: Reward
     """
-
-    score_component = state_2.get_player_state(player)[24] - state_1.get_player_state(player)[24]  # Score differential is 24th index (immediately after hand)
+    player_index = state_2.game.players.index(player)
+    state_2_score = state_2.scores_vector[player_index]
+    state_1_score = state_1.scores_vector[player_index]
+    score_component = state_2_score - state_1_score
     game_component = 0
 
     if winner is not None:
         if player == winner:
-            game_component = win_reward
+            game_component += win_reward
         else:  # Lose
-            game_component = -1 * win_reward
+            game_component -= win_reward
 
     return score_component + game_component

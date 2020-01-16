@@ -107,7 +107,8 @@ class DQN:
 
             for states, actions, next_states, rewards in exp_gen:
                 if device_mismatch:
-                    states, actions, next_states, rewards = states.to(self.device), actions.to(self.device), next_states.to(self.device), rewards.to(self.device)
+                    states, actions, next_states, rewards = \
+                        states.to(self.device), actions.to(self.device), next_states.to(self.device), rewards.to(self.device)
 
                 self.train_one_batch(states=states, actions=actions, next_states=next_states, rewards=rewards, store_history=store_history)
 

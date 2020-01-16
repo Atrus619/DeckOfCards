@@ -39,10 +39,17 @@ class Agent(Player):
         trick_output = None
         selected_card = self.one_hot_template[trick_index]
 
-        for card in game.hands[self]:
-            if selected_card == card:
-                trick_output = 'H' + str(game.hands[self].cards.index(card))
+        # Search through the meld before searching through the hand (heuristic)
+        for mt in game.melds[self].melded_cards:
+            if selected_card == mt.card:
+                trick_output = 'M' + str(game.melds[self].melded_cards.index(mt))
                 break
+
+        if trick_output is None:  # If card isn't found in the meld, search through the hand
+            for card in game.hands[self]:
+                if selected_card == card:
+                    trick_output = 'H' + str(game.hands[self].cards.index(card))
+                    break
 
         if is_trick:
             return trick_output, None

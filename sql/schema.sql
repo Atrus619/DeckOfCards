@@ -18,6 +18,7 @@ CREATE TABLE cards.experience (
     next_vector varchar NULL,
     reward numeric NULL,
     action varchar NULL,
+    meld_action varchar NULL,
     CONSTRAINT experience_pk PRIMARY KEY (id)
 );
 
@@ -42,5 +43,6 @@ CREATE TABLE cards.experience_archive (
 	vector varchar NULL,
 	reward numeric NULL,
 	"action" varchar NULL,
+	meld_action varchar NULL,
 	next_vector varchar NULL
 );

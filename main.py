@@ -15,6 +15,7 @@ from pinochle.scripted_bots.ExpertPolicy import ExpertPolicy
 import logging
 import visualize.visualize as viz
 import pipeline.benchmark as bench
+import util.db as db
 
 import pipeline.experiment as exp
 # util.clear_run('TEST')
@@ -25,13 +26,16 @@ import pipeline.experiment as exp
 epsilon = Epsilon('eval')
 player_1 = Agent(name=cfg.random_bot_name + '1', model=RandomBot(), epsilon=epsilon)
 player_2 = Agent(name=cfg.random_bot_name + '2', model=RandomBot(), epsilon=epsilon)
+player_human = Human(name='Me, no you?')
 
 player_list = [player_1, player_2]
-# TODO: Fix up the neeyural nutwerkz to have 2 heads.
+# TODO: Fix train method in DQN.py to accommodate meld addition (clever use of masking required)
 
 game = Game(name=cfg.game, players=player_list, run_id='TEST', current_cycle=None)
 game.deal()
-game.play()
+winner_index, exp_df = game.play()
+db.upload_exp(df=exp_df)
+test = db.get_exp('TEST', 1000)
 
 import pdb; pdb.pm()
 

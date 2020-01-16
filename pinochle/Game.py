@@ -76,7 +76,7 @@ class Game:
     # H = hand, M = meld
     def collect_trick_cards(self, player, state):
         if type(player).__name__ == 'Human':
-            user_input = player.get_action(state, msg=player.name + " select card for trick:")
+            trick_input = player.get_action(state, msg=player.name + " select card for trick:")
         else:  # Bot
             if self.human_test:
                 logging.debug("Model hand before action:")
@@ -119,8 +119,6 @@ class Game:
 
         if type(player).__name__ == 'Human':
             while len(collected_hand_cards) + len(collected_meld_cards) < limit:
-                # TODO: move this to meld util so it resides in the same class as the model implementation
-
                 if first_hand_card:
                     print_divider()
                     logging.debug("For meld please select first card from hand.")

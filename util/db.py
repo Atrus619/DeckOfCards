@@ -16,6 +16,11 @@ def open_connection():
 
 def upload_exp(df):
     if len(df) > 0:
+        # Force all columns to be strings
+        for col in df.columns:
+            df[col] = df[col].astype(str)
+
+        # Python black magic to make a dynamic query
         columns = ",".join(df.columns)
 
         values = "VALUES ({})".format(",".join(["%s" for _ in df.columns]))
@@ -49,13 +54,13 @@ def get_all_exp():
     with open_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
-                f"SELECT id, ins_ts, agent_id, run_id, vector, reward, action, next_vector FROM \
+                f"SELECT id, ins_ts, agent_id, run_id, vector, reward, action, meld_action, next_vector FROM \
                 cards.experience \
                 ORDER BY ins_ts DESC;"
             )
             result = cursor.fetchall()
 
-    df = pd.DataFrame(result, columns=['id', 'ins_ts', 'agent_id', 'run_id', 'vector', 'reward', 'action', 'next_vector'])
+    df = pd.DataFrame(result, columns=['id', 'ins_ts', 'agent_id', 'run_id', 'vector', 'reward', 'action', 'meld_action', 'next_vector'])
     return df
 
 
@@ -85,7 +90,7 @@ def get_exp(run_id, buffer):
     with open_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
-                f"SELECT vector, action, next_vector, reward FROM \
+                f"SELECT vector, action, meld_action, next_vector, reward FROM \
                 cards.experience \
                 WHERE run_id = '{run_id}' \
                 ORDER BY ins_ts DESC \
@@ -93,7 +98,7 @@ def get_exp(run_id, buffer):
             )
             result = cursor.fetchall()
 
-    df = pd.DataFrame(result, columns=['state', 'action', 'next_state', 'reward'])
+    df = pd.DataFrame(result, columns=['state', 'action', 'meld_action', 'next_state', 'reward'])
     return df
 
 
