@@ -13,7 +13,7 @@ class Config:
     game = 'pinochle'
     run_id = 'TEST'
     logging_level = logging.INFO
-    store_history = True  # Whether to store gradients & friends in the neural network class
+    is_storing_history = True  # Whether to store gradients & friends in the neural network class
     checkpoint_freq = 50  # Frequency (in cycles) to checkpoint model (save to checkpoints folder)
     win_reward = 150
 
@@ -25,8 +25,7 @@ class Config:
     epsilon_decrement = 0.005  # for get_epsilon_constant_decrement func
 
     # State-Action
-    # Length of state vector: [hand=24, score_diff_vector=1, trump_vector=4, discard_vector=24,
-    # played_card_vector=24, played_meld_vector=24, opponent_meld_vector=24]
+    # Length of state vector: [player_hand=24, player_meld=24, opponent_meld=24, score_differential=1, discarded_cards=24, trump_suit=4, most_recently_played_card=24]
     state_size = 125
     num_actions = 24  # Length of action vector
 

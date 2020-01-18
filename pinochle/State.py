@@ -55,21 +55,25 @@ class State:
         :param player:
         :return:
         """
+        # Determine if player is player1 (index = 0) or player2 (index = 1)
         player_index = self.game.players.index(player)
+        opponent_index = 1 - player_index
 
-        score_info = np.array((self.global_state[player_index] - self.global_state[1 - player_index])).reshape(-1)
+        # Array of length 1 describing the differential in score of player vs. opponent (positive means winning, negative means losing)
+        score_info = np.array((self.scores_vector[player_index] - self.scores_vector[opponent_index])).reshape(-1)
 
-        player_info_start = 2 + player_index * len(self.one_hot_template) * 2
-        player_info_stop = 2 + (player_index + 1) * len(self.one_hot_template) * 2
-        player_info = self.global_state[player_info_start:player_info_stop]
+        # All global information available to both players (excludes melds, these are taken care of in the conditional statement below)
+        global_info = np.concatenate((score_info, self.discard_vector, self.trump_vector, self.played_card_vector), axis=0)
 
-        opponent_info_start = 2 + ((1 - player_index) * 2 + 1) * len(self.one_hot_template)
-        opponent_info_stop = 2 + ((1 - player_index) * 2 + 2) * len(self.one_hot_template)
-        opponent_info = self.global_state[opponent_info_start:opponent_info_stop]
+        if player_index == 0:  # Player 1
+            player_info = np.concatenate((self.player1_hand_vector, self.player1_meld_vector), axis=0)  # Player's hand and meld
+            opponent_info = self.player2_meld_vector  # Opponent's meld
+        else:  # Player 2
+            player_info = np.concatenate((self.player2_hand_vector, self.player2_meld_vector), axis=0)
+            opponent_info = self.player1_meld_vector
 
-        global_info = self.global_state[2 + 2 * 2 * len(self.one_hot_template):]
-
-        return np.concatenate((player_info, opponent_info, score_info, global_info), axis=0)
+        # Order of entries in a player's observed state
+        return np.concatenate((player_info, opponent_info, global_info), axis=0)
 
     def get_player_state_as_tensor(self, player, device=None):
         arr = self.get_player_state(player)

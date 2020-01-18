@@ -9,6 +9,7 @@ from config import Config as cfg
 import logging
 from util.Constants import Constants as cs
 from util.Vectors import Vectors as vs
+import util.vector_builder as vb
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=cfg.logging_level)
 
@@ -40,6 +41,10 @@ class DQN:
         # History
         self.loss = []
 
+        # Configuration
+        self.trick_mask_vector, self.meld_mask_vector = torch.tensor(vb.build_trick_mask_vector(), device=self.device), torch.tensor(vb.build_meld_mask_vector(), device=self.device)
+        self.mask_value = -1
+
     def get_legal_action(self, state, player, game, is_trick):
         """
         :param state:
@@ -57,9 +62,10 @@ class DQN:
             self.print_decision_logic(initial_action_tensor=initial_trick_action_tensor, player=player, game=game)
 
         return self.get_best_masked_action(initial_trick_action_tensor, valid_trick_mask), \
-            self.get_best_masked_action(initial_meld_action_tensor, valid_meld_mask)
+               self.get_best_masked_action(initial_meld_action_tensor, valid_meld_mask)
 
-    def get_best_masked_action(self, tensor, mask):
+    @staticmethod
+    def get_best_masked_action(tensor, mask):
         # Setting to large negative number to deal with ties.
         # If an invalid option and a valid option had the same value, it could choose the invalid option, leading to a downstream error.
         invalid_mask = (mask == 0).nonzero()
@@ -69,11 +75,35 @@ class DQN:
 
         return (tensor == best_valid_action_prob).nonzero()[0].item()
 
-    def train_one_batch(self, states, actions, next_states, rewards, store_history):
-        action_indices = actions.argmax(dim=1).unsqueeze(1)
-        pred_Q = self.policy_net(states=states).gather(1, action_indices)  # Compute Q(s_t)
+    def get_action_indices(self, action_tensor, is_trick):
+        # Accepts an action tensor, compares it against the mask tensor (all -1's) and returns the indices of each selected action.
+        # Actions that should be masked (no opportunity for a move) are set to -1.
+        action_indices = action_tensor.argmax(dim=1).unsqueeze(1)
+        action_masks = torch.all(action_tensor == (self.trick_mask_vector if is_trick else self.meld_mask_vector), dim=1).nonzero().squeeze()
+        action_indices[action_masks] = self.mask_value
+        return action_indices.squeeze()
 
-        pred_next_state_values = self.target_net(next_states).max(dim=1)[0]  # Compute V(s_t+1) for all next states
+    def train_one_batch(self, states, actions, meld_actions, next_states, rewards, is_storing_history):
+        # Get indices of each selected action, as well as indicators for masked actions
+        action_indices, meld_action_indices = self.get_action_indices(actions, is_trick=True), self.get_action_indices(meld_actions, is_trick=False)
+
+        # Forward pass for all states
+        action_outputs, meld_action_outputs = self.policy_net(states=states)
+
+        # Filter out invalid actions / meld actions
+        action_outputs, meld_action_outputs = action_outputs[action_indices != self.mask_value, :], meld_action_outputs[meld_action_indices != self.mask_value, :]
+        filtered_action_indices, filtered_meld_action_indices = action_indices[action_indices != self.mask_value].unsqueeze(1), meld_action_indices[meld_action_indices != self.mask_value].unsqueeze(1)
+
+        # Gather the predicted Q(s_t) for each selected action
+        pred_Q_trick, pred_Q_meld = action_outputs.gather(1, filtered_action_indices), meld_action_outputs.gather(1, filtered_meld_action_indices)
+
+        # Compute V(s_t+1) for the next state (and filter out masked values)
+        pred_next_state_values_trick, pred_next_state_values_meld = self.target_net(next_states)
+        pred_next_state_values_trick, pred_next_state_values_meld = pred_next_state_values_trick[action_indices != self.mask_value, :], pred_next_state_values_meld[meld_action_indices != self.mask_value, :]
+        pred_next_state_best_value_trick, pred_next_state_best_value_meld = pred_next_state_values_trick.max(dim=1)[0], pred_next_state_values_meld.max(dim=1)[0]
+
+        # Determine which next_states are terminal and override with value of 0
+        # TODO: Pick up here
         terminal_state_mask = (next_states == self.terminal_state_tensor).all(dim=1)  # Determine which states are terminal
         pred_next_state_values[terminal_state_mask] = 0.0  # Overwrite terminal states with zeros
         expected_Q = (pred_next_state_values * self.gamma) + rewards
@@ -91,28 +121,27 @@ class DQN:
         self.policy_net.opt.step()
 
         # Save History
-        if store_history:
+        if is_storing_history:
             self.policy_net.history.loss.append(loss.item())
             self.policy_net.history.Q.append(pred_Q.mean().item())
             self.policy_net.history.store_weight_and_grad_norms()
 
-    def train_self(self, num_epochs, exp_gen, store_history=False):
-        device_mismatch = self.device != exp_gen.dataset.device
-
+    def train_self(self, num_epochs, exp_gen, is_storing_history=False):
         self.policy_net.train()
 
         for i in range(num_epochs):
             if i % self.update_target_net_freq == 0:
                 self.update_target_net()
 
-            for states, actions, next_states, rewards in exp_gen:
-                if device_mismatch:
-                    states, actions, next_states, rewards = \
-                        states.to(self.device), actions.to(self.device), next_states.to(self.device), rewards.to(self.device)
+            for data in exp_gen:
+                self.train_one_batch(states=data.state.to(self.device),
+                                     actions=data.action.to(self.device),
+                                     meld_actions=data.meld_action.to(self.device),
+                                     next_states=data.next_state.to(self.device),
+                                     rewards=data.reward.to(self.device),
+                                     is_storing_history=is_storing_history)
 
-                self.train_one_batch(states=states, actions=actions, next_states=next_states, rewards=rewards, store_history=store_history)
-
-            if store_history:
+            if is_storing_history:
                 self.policy_net.next_epoch()
 
     def update_target_net(self):

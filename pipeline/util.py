@@ -36,4 +36,4 @@ def train_model(model, config):
     gh_gen = DataLoader(dataset=gh, batch_size=gh.batch_size, shuffle=True, num_workers=config.num_workers)
 
     # Train model
-    model.train_self(num_epochs=config.epochs_per_cycle, exp_gen=gh_gen, store_history=config.store_history)
+    model.train_self(num_epochs=config.epochs_per_cycle, exp_gen=gh_gen, is_storing_history=config.is_storing_history)

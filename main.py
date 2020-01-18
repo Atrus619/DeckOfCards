@@ -16,12 +16,32 @@ import logging
 import visualize.visualize as viz
 import pipeline.benchmark as bench
 import util.db as db
+from config import Config as cfg
+import pipeline.util as pu
+from torch.utils.data import DataLoader
 
 import pipeline.experiment as exp
 # util.clear_run('TEST')
 # exp.run_full_experiment(config=cfg)
 #
 # viz.plot_diagnostic_plots('No_Gamma')
+
+df = db.get_exp('TEST', 1000)
+gh = GameHistory(df=df, **cfg.GH_params)
+
+self = DQN(run_id=cfg.run_id, **cfg.DQN_params)
+exp_gen = DataLoader(dataset=gh, batch_size=gh.batch_size, shuffle=True, num_workers=cfg.num_workers)
+
+for data in exp_gen:
+    break
+
+states=data.state.to(self.device)
+actions=data.action.to(self.device)
+meld_actions=data.meld_action.to(self.device)
+next_states=data.next_state.to(self.device)
+rewards=data.reward.to(self.device)
+
+pu.train_model(model=self, config=cfg)
 
 epsilon = Epsilon('eval')
 player_1 = Agent(name=cfg.random_bot_name + '1', model=RandomBot(), epsilon=epsilon)
@@ -35,7 +55,7 @@ game = Game(name=cfg.game, players=player_list, run_id='TEST', current_cycle=Non
 game.deal()
 winner_index, exp_df = game.play()
 db.upload_exp(df=exp_df)
-test = db.get_exp('TEST', 1000)
+
 
 import pdb; pdb.pm()
 
