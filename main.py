@@ -35,11 +35,11 @@ exp_gen = DataLoader(dataset=gh, batch_size=gh.batch_size, shuffle=True, num_wor
 for data in exp_gen:
     break
 
-states=data.state.to(self.device)
-actions=data.action.to(self.device)
-meld_actions=data.meld_action.to(self.device)
-next_states=data.next_state.to(self.device)
-rewards=data.reward.to(self.device)
+states = data.state.to(self.device)
+actions = data.action.to(self.device)
+meld_actions = data.meld_action.to(self.device)
+next_states = data.next_state.to(self.device)
+rewards = data.reward.to(self.device)
 
 pu.train_model(model=self, config=cfg)
 

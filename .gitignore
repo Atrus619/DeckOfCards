@@ -13,3 +13,4 @@ saved_models
 model_checkpoints
 experiments
 saved_histories
+.env

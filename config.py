@@ -46,7 +46,7 @@ class Config:
         'terminal_state_tensor': torch.zeros(state_size),
         'num_layers': 6,
         'hidden_units_per_layer': 32,
-        'device': 'cuda:0'  # Valid choices are 'cpu' or 'cuda:0'
+        'device': 'cuda:0' if torch.cuda.is_available() else 'cpu'
     }
 
     # Custom Data Set Parameters

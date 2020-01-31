@@ -1,14 +1,17 @@
+import os
 import psycopg2 as pg
 import psycopg2.extras as pge
 import pandas as pd
+from dotenv import load_dotenv
 
 
 def open_connection():
+    load_dotenv()
     connection = pg.connect(
-        database="postgres",
-        user="postgres",
-        host="localhost",
-        password="password"
+        database=os.getenv('db_name') or "postgres",
+        user=os.getenv('db_user') or "postgres",
+        host=os.getenv('db_host') or "localhost",
+        password=os.getenv('db_pw') or "password"
     )
 
     return connection

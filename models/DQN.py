@@ -21,7 +21,8 @@ class DQN:
 
     def __init__(self, update_target_net_freq, gamma, grad_clamp, terminal_state_tensor,
                  num_layers, hidden_units_per_layer, state_size, num_actions,
-                 run_id=None, loss_fn=F.smooth_l1_loss, activation_fn=nn.LeakyReLU(0.2), learning_rate=2e-4, beta1=0.5, beta2=0.999, weight_decay=0, device=None):
+                 run_id=None, loss_fn=F.smooth_l1_loss, activation_fn=nn.LeakyReLU(0.2), learning_rate=2e-4, beta1=0.5,
+                 beta2=0.999, weight_decay=0, device=None):
         # General housekeeping
         self.run_id = 'latest' if run_id is None else run_id
         self.device = device if device is not None else torch.device('cuda:0' if (torch.cuda.is_available()) else 'cpu')
@@ -32,9 +33,12 @@ class DQN:
         self.player = None
 
         # Instantiate neural nets
-        self.policy_net = DQN_FCNet(run_id=self.run_id, num_layers=num_layers, hidden_units_per_layer=hidden_units_per_layer, state_size=state_size, num_actions=num_actions,
+        self.policy_net = DQN_FCNet(run_id=self.run_id, num_layers=num_layers,
+                                    hidden_units_per_layer=hidden_units_per_layer, state_size=state_size,
+                                    num_actions=num_actions,
                                     loss_fn=loss_fn,
-                                    activation_fn=activation_fn, learning_rate=learning_rate, beta1=beta1, beta2=beta2, weight_decay=weight_decay, device=device).to(
+                                    activation_fn=activation_fn, learning_rate=learning_rate, beta1=beta1, beta2=beta2,
+                                    weight_decay=weight_decay, device=device).to(
             self.device)
         self.target_net = deepcopy(self.policy_net)
 
@@ -42,7 +46,9 @@ class DQN:
         self.loss = []
 
         # Configuration
-        self.trick_mask_vector, self.meld_mask_vector = torch.tensor(vb.build_trick_mask_vector(), device=self.device), torch.tensor(vb.build_meld_mask_vector(), device=self.device)
+        self.trick_mask_vector, self.meld_mask_vector = torch.tensor(vb.build_trick_mask_vector(),
+                                                                     device=self.device), torch.tensor(
+            vb.build_meld_mask_vector(), device=self.device)
         self.mask_value = -1
 
     def get_legal_action(self, state, player, game, is_trick):
@@ -79,40 +85,64 @@ class DQN:
         # Accepts an action tensor, compares it against the mask tensor (all -1's) and returns the indices of each selected action.
         # Actions that should be masked (no opportunity for a move) are set to -1.
         action_indices = action_tensor.argmax(dim=1).unsqueeze(1)
-        action_masks = torch.all(action_tensor == (self.trick_mask_vector if is_trick else self.meld_mask_vector), dim=1).nonzero().squeeze()
+        action_masks = torch.all(action_tensor == (self.trick_mask_vector if is_trick else self.meld_mask_vector),
+                                 dim=1).nonzero().squeeze()
         action_indices[action_masks] = self.mask_value
         return action_indices.squeeze()
 
-    def train_one_batch(self, states, actions, meld_actions, next_states, rewards, is_storing_history):
+    def compute_loss(self, raw_forward_pass_values_current_state, raw_forward_pass_values_next_state, actions,
+                     terminal_state_mask, rewards, is_trick):
         # Get indices of each selected action, as well as indicators for masked actions
-        action_indices, meld_action_indices = self.get_action_indices(actions, is_trick=True), self.get_action_indices(meld_actions, is_trick=False)
+        raw_action_indices = self.get_action_indices(actions, is_trick=is_trick)
+        action_mask = (raw_action_indices != self.mask_value)
 
-        # Forward pass for all states
-        action_outputs, meld_action_outputs = self.policy_net(states=states)
-
-        # Filter out invalid actions / meld actions
-        action_outputs, meld_action_outputs = action_outputs[action_indices != self.mask_value, :], meld_action_outputs[meld_action_indices != self.mask_value, :]
-        filtered_action_indices, filtered_meld_action_indices = action_indices[action_indices != self.mask_value].unsqueeze(1), meld_action_indices[meld_action_indices != self.mask_value].unsqueeze(1)
+        # Filter out invalid / irrelevant actions (i.e. melds that did not occur)
+        forward_pass_values_current_state = raw_forward_pass_values_current_state[action_mask, :]
+        action_indices = raw_action_indices[action_mask].unsqueeze(1)
+        forward_pass_values_next_state = raw_forward_pass_values_next_state[action_mask, :]
 
         # Gather the predicted Q(s_t) for each selected action
-        pred_Q_trick, pred_Q_meld = action_outputs.gather(1, filtered_action_indices), meld_action_outputs.gather(1, filtered_meld_action_indices)
+        pred_Q = forward_pass_values_current_state.gather(1, action_indices)
 
-        # Compute V(s_t+1) for the next state (and filter out masked values)
-        pred_next_state_values_trick, pred_next_state_values_meld = self.target_net(next_states)
-        pred_next_state_values_trick, pred_next_state_values_meld = pred_next_state_values_trick[action_indices != self.mask_value, :], pred_next_state_values_meld[meld_action_indices != self.mask_value, :]
-        pred_next_state_best_value_trick, pred_next_state_best_value_meld = pred_next_state_values_trick.max(dim=1)[0], pred_next_state_values_meld.max(dim=1)[0]
+        # Compute V(s_t+1) for the next state
+        pred_next_state_best_value = forward_pass_values_next_state.max(dim=1)[0]
 
         # Determine which next_states are terminal and override with value of 0
-        # TODO: Pick up here
-        terminal_state_mask = (next_states == self.terminal_state_tensor).all(dim=1)  # Determine which states are terminal
-        pred_next_state_values[terminal_state_mask] = 0.0  # Overwrite terminal states with zeros
-        expected_Q = (pred_next_state_values * self.gamma) + rewards
+        pred_next_state_best_value[terminal_state_mask] = 0.0
 
-        loss = self.policy_net.loss_fn(pred_Q, expected_Q.unsqueeze(1))  # Compute loss
+        # Calc expected Q
+        expected_Q = (pred_next_state_best_value * self.gamma) + rewards[action_mask]
+        expected_Q = expected_Q.unsqueeze(1)
+
+        # Calc loss
+        loss = self.policy_net.loss_fn(pred_Q, expected_Q)
+        return loss
+
+    def train_one_batch(self, states, actions, meld_actions, next_states, rewards, is_storing_history):
+        # Forward pass for all states and next_states
+        trick_action_outputs_current_state, meld_action_outputs_current_state = self.policy_net(states=states)
+        trick_action_outputs_next_state, meld_action_outputs_next_state = self.target_net(states=next_states)
+        terminal_state_mask = (next_states == self.terminal_state_tensor).all(
+            dim=1)  # Determine which states are terminal
+
+        trick_loss = self.compute_loss(raw_forward_pass_values_current_state=trick_action_outputs_current_state,
+                                       raw_forward_pass_values_next_state=trick_action_outputs_next_state,
+                                       actions=actions,
+                                       terminal_state_mask=terminal_state_mask,
+                                       rewards=rewards,
+                                       is_trick=True)
+
+        meld_loss = self.compute_loss(raw_forward_pass_values_current_state=meld_action_outputs_current_state,
+                                      raw_forward_pass_values_next_state=meld_action_outputs_next_state,
+                                      actions=meld_actions,
+                                      terminal_state_mask=terminal_state_mask,
+                                      rewards=rewards,
+                                      is_trick=False)
 
         # Optimize Model
         self.policy_net.zero_grad()
-        loss.backward()
+        total_loss = trick_loss + meld_loss
+        total_loss.backward()
 
         if self.grad_clamp:
             for param in self.policy_net.parameters():
@@ -122,8 +152,8 @@ class DQN:
 
         # Save History
         if is_storing_history:
-            self.policy_net.history.loss.append(loss.item())
-            self.policy_net.history.Q.append(pred_Q.mean().item())
+            self.policy_net.history.loss.append(total_loss.item())
+            # self.policy_net.history.Q.append(pred_Q.mean().item())  # Deprecated for now
             self.policy_net.history.store_weight_and_grad_norms()
 
     def train_self(self, num_epochs, exp_gen, is_storing_history=False):
@@ -165,7 +195,8 @@ class DQN:
 
         card_qs = []
         for i, action in enumerate(actions):
-            card_qs.append((vs.PINOCHLE_ONE_HOT_VECTOR[i], action.item(), player.convert_model_output(output_index=i, game=game, is_trick=True) is not None))
+            card_qs.append((vs.PINOCHLE_ONE_HOT_VECTOR[i], action.item(),
+                            player.convert_model_output(output_index=i, game=game, is_trick=True) is not None))
 
         card_qs = sorted(card_qs, key=lambda tup: tup[1], reverse=True)
         # card_qs = sorted(card_qs, key=lambda tup: tup[2], reverse=True)
