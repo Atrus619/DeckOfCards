@@ -19,29 +19,30 @@ import util.db as db
 from config import Config as cfg
 import pipeline.util as pu
 from torch.utils.data import DataLoader
-
 import pipeline.experiment as exp
-# util.clear_run('TEST')
-# exp.run_full_experiment(config=cfg)
+
+util.clear_run(run_id='TEST')
+exp.run_full_experiment(config=cfg)
+
+viz.plot_diagnostic_plots(cfg.run_id)
+
+# df = db.get_exp('TEST', 1000)
+# gh = GameHistory(df=df, **cfg.GH_params)
 #
-# viz.plot_diagnostic_plots('No_Gamma')
+# self = DQN(run_id=cfg.run_id, **cfg.DQN_params)
+# exp_gen = DataLoader(dataset=gh, batch_size=gh.batch_size, shuffle=True, num_workers=cfg.num_workers)
+#
+# self.train_self(num_epochs=5,
+#                 exp_gen=exp_gen,
+#                 is_storing_history=True)
 
-df = db.get_exp('TEST', 1000)
-gh = GameHistory(df=df, **cfg.GH_params)
-
-self = DQN(run_id=cfg.run_id, **cfg.DQN_params)
-exp_gen = DataLoader(dataset=gh, batch_size=gh.batch_size, shuffle=True, num_workers=cfg.num_workers)
-
-for data in exp_gen:
-    break
-
-states = data.state.to(self.device)
-actions = data.action.to(self.device)
-meld_actions = data.meld_action.to(self.device)
-next_states = data.next_state.to(self.device)
-rewards = data.reward.to(self.device)
-
-pu.train_model(model=self, config=cfg)
+# states = data.state.to(self.device)
+# actions = data.action.to(self.device)
+# meld_actions = data.meld_action.to(self.device)
+# next_states = data.next_state.to(self.device)
+# rewards = data.reward.to(self.device)
+#
+# pu.train_model(model=self, config=cfg)
 
 epsilon = Epsilon('eval')
 player_1 = Agent(name=cfg.random_bot_name + '1', model=RandomBot(), epsilon=epsilon)
@@ -49,7 +50,6 @@ player_2 = Agent(name=cfg.random_bot_name + '2', model=RandomBot(), epsilon=epsi
 player_human = Human(name='Me, no you?')
 
 player_list = [player_1, player_2]
-# TODO: Fix train method in DQN.py to accommodate meld addition (clever use of masking required)
 
 game = Game(name=cfg.game, players=player_list, run_id='TEST', current_cycle=None)
 game.deal()

@@ -109,14 +109,14 @@ def run_full_experiment(config):
             logger.info(f'Winrate vs. Random Bot: {random_win_rate * 100:.1f}%')
 
             # Play against expert policy bot and measure win rate
-            expert_policy_win_rate = benchmark.benchmark_test(primary_model=model_1, benchmark_model=ExpertPolicy(), benchmark_bot_name=config.expert_policy_bot_name,
-                                                              num_games=config.random_bot_cycles, run_id=config.run_id if config.log_expert_policy_benchmark else None)
-            logger.info(f'Winrate vs. Expert Policy: {expert_policy_win_rate * 100:.1f}%')
+            # expert_policy_win_rate = benchmark.benchmark_test(primary_model=model_1, benchmark_model=ExpertPolicy(), benchmark_bot_name=config.expert_policy_bot_name,
+            #                                                   num_games=config.random_bot_cycles, run_id=config.run_id if config.log_expert_policy_benchmark else None)
+            # logger.info(f'Winrate vs. Expert Policy: {expert_policy_win_rate * 100:.1f}%')
     
             # Collect average reward from database
             average_reward = benchmark.get_average_reward(run_id=config.run_id, previous_experience_id=previous_experience_id,
                                                           agent_id=config.bot_1_name, opponent_id=config.bot_2_name)
-            db.insert_metrics(run_id=config.run_id, win_rate=benchmark_cycle_win_rate, win_rate_random=random_win_rate, win_rate_expert_policy=expert_policy_win_rate,
+            db.insert_metrics(run_id=config.run_id, win_rate=benchmark_cycle_win_rate, win_rate_random=random_win_rate, win_rate_expert_policy=0.0,
                               average_reward=average_reward)
     
             previous_experience_id = db.get_max_id(config.run_id)

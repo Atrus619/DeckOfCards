@@ -165,7 +165,7 @@ def clear_run(run_id):
         print(f'Config for {run_id} cleared.')
 
     # Saved histories
-    saved_history_path = os.path.join(cfg.history_folder, run_id + '.pkl')
+    saved_history_path = os.path.join(cfg.history_folder, run_id + '_history.pkl')
     if os.path.exists(saved_history_path):
         os.remove(saved_history_path)
         print(f'History for {run_id} cleared.')

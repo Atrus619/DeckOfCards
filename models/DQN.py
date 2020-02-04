@@ -68,7 +68,7 @@ class DQN:
             self.print_decision_logic(initial_action_tensor=initial_trick_action_tensor, player=player, game=game)
 
         return self.get_best_masked_action(initial_trick_action_tensor, valid_trick_mask), \
-               self.get_best_masked_action(initial_meld_action_tensor, valid_meld_mask)
+               None if is_trick else self.get_best_masked_action(initial_meld_action_tensor, valid_meld_mask)
 
     @staticmethod
     def get_best_masked_action(tensor, mask):
@@ -90,8 +90,8 @@ class DQN:
         action_indices[action_masks] = self.mask_value
         return action_indices.squeeze()
 
-    def compute_loss(self, raw_forward_pass_values_current_state, raw_forward_pass_values_next_state, actions,
-                     terminal_state_mask, rewards, is_trick):
+    def compute_loss_and_exp_Q(self, raw_forward_pass_values_current_state, raw_forward_pass_values_next_state, actions,
+                               terminal_state_mask, rewards, is_trick):
         # Get indices of each selected action, as well as indicators for masked actions
         raw_action_indices = self.get_action_indices(actions, is_trick=is_trick)
         action_mask = (raw_action_indices != self.mask_value)
@@ -108,7 +108,7 @@ class DQN:
         pred_next_state_best_value = forward_pass_values_next_state.max(dim=1)[0]
 
         # Determine which next_states are terminal and override with value of 0
-        pred_next_state_best_value[terminal_state_mask] = 0.0
+        pred_next_state_best_value[terminal_state_mask[action_mask]] = 0.0
 
         # Calc expected Q
         expected_Q = (pred_next_state_best_value * self.gamma) + rewards[action_mask]
@@ -116,33 +116,33 @@ class DQN:
 
         # Calc loss
         loss = self.policy_net.loss_fn(pred_Q, expected_Q)
-        return loss
+        return loss, expected_Q.mean()
 
     def train_one_batch(self, states, actions, meld_actions, next_states, rewards, is_storing_history):
         # Forward pass for all states and next_states
         trick_action_outputs_current_state, meld_action_outputs_current_state = self.policy_net(states=states)
         trick_action_outputs_next_state, meld_action_outputs_next_state = self.target_net(states=next_states)
-        terminal_state_mask = (next_states == self.terminal_state_tensor).all(
-            dim=1)  # Determine which states are terminal
+        terminal_state_mask = (next_states == self.terminal_state_tensor).all(dim=1)  # Determine which states are terminal
 
-        trick_loss = self.compute_loss(raw_forward_pass_values_current_state=trick_action_outputs_current_state,
-                                       raw_forward_pass_values_next_state=trick_action_outputs_next_state,
-                                       actions=actions,
-                                       terminal_state_mask=terminal_state_mask,
-                                       rewards=rewards,
-                                       is_trick=True)
+        trick_loss, trick_Q = self.compute_loss_and_exp_Q(raw_forward_pass_values_current_state=trick_action_outputs_current_state,
+                                                          raw_forward_pass_values_next_state=trick_action_outputs_next_state,
+                                                          actions=actions,
+                                                          terminal_state_mask=terminal_state_mask,
+                                                          rewards=rewards,
+                                                          is_trick=True)
 
-        meld_loss = self.compute_loss(raw_forward_pass_values_current_state=meld_action_outputs_current_state,
-                                      raw_forward_pass_values_next_state=meld_action_outputs_next_state,
-                                      actions=meld_actions,
-                                      terminal_state_mask=terminal_state_mask,
-                                      rewards=rewards,
-                                      is_trick=False)
+        meld_loss, meld_Q = self.compute_loss_and_exp_Q(raw_forward_pass_values_current_state=meld_action_outputs_current_state,
+                                                        raw_forward_pass_values_next_state=meld_action_outputs_next_state,
+                                                        actions=meld_actions,
+                                                        terminal_state_mask=terminal_state_mask,
+                                                        rewards=rewards,
+                                                        is_trick=False)
 
         # Optimize Model
         self.policy_net.zero_grad()
         total_loss = trick_loss + meld_loss
         total_loss.backward()
+        total_Q = trick_Q + meld_Q
 
         if self.grad_clamp:
             for param in self.policy_net.parameters():
@@ -153,7 +153,7 @@ class DQN:
         # Save History
         if is_storing_history:
             self.policy_net.history.loss.append(total_loss.item())
-            # self.policy_net.history.Q.append(pred_Q.mean().item())  # Deprecated for now
+            self.policy_net.history.Q.append(total_Q.mean().item())  # Deprecated for now
             self.policy_net.history.store_weight_and_grad_norms()
 
     def train_self(self, num_epochs, exp_gen, is_storing_history=False):
